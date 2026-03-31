@@ -3,12 +3,14 @@ import { getServerSession } from "next-auth";
 import { z } from "zod";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { dollarsToCents } from "@/types";
 import type { ApiResponse, PaginatedResponse, InvoiceWithClient } from "@/types";
 
 const lineItemSchema = z.object({
   description: z.string().min(1, "Description is required"),
   quantity: z.number().positive("Quantity must be positive"),
   unitPrice: z.number().nonnegative("Unit price must be non-negative"),
+  sortOrder: z.number().int().default(0),
 });
 
 const createInvoiceSchema = z.object({
@@ -16,13 +18,14 @@ const createInvoiceSchema = z.object({
   dueDate: z.string().datetime("Invalid due date"),
   currency: z.string().length(3).default("USD"),
   taxRate: z.number().min(0).max(100).default(0),
+  discountAmount: z.number().nonnegative().default(0),
   notes: z.string().optional(),
-  terms: z.string().optional(),
+  footer: z.string().optional(),
   lineItems: z.array(lineItemSchema).min(1, "At least one line item is required"),
 });
 
 /**
- * GET /api/invoices
+ * GET /api/v1/invoices
  * Returns paginated list of invoices for the authenticated user.
  */
 export async function GET(
@@ -35,12 +38,14 @@ export async function GET(
 
   const { searchParams } = new URL(req.url);
   const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
-  const pageSize = Math.min(100, Math.max(1, parseInt(searchParams.get("pageSize") ?? "20", 10)));
+  const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") ?? "20", 10)));
   const status = searchParams.get("status") ?? undefined;
+  const clientId = searchParams.get("clientId") ?? undefined;
 
   const where = {
     userId: session.user.id,
     ...(status ? { status: status as InvoiceWithClient["status"] } : {}),
+    ...(clientId ? { clientId } : {}),
   };
 
   const [invoices, total] = await Promise.all([
@@ -48,8 +53,8 @@ export async function GET(
       where,
       include: { client: true, lineItems: true },
       orderBy: { createdAt: "desc" },
-      skip: (page - 1) * pageSize,
-      take: pageSize,
+      skip: (page - 1) * limit,
+      take: limit,
     }),
     prisma.invoice.count({ where }),
   ]);
@@ -59,15 +64,15 @@ export async function GET(
       data: invoices as InvoiceWithClient[],
       total,
       page,
-      pageSize,
-      totalPages: Math.ceil(total / pageSize),
+      limit,
     },
   });
 }
 
 /**
- * POST /api/invoices
+ * POST /api/v1/invoices
  * Creates a new invoice (DRAFT) for the authenticated user.
+ * All monetary values accepted in dollars; stored in cents.
  */
 export async function POST(
   req: NextRequest
@@ -83,9 +88,9 @@ export async function POST(
     return NextResponse.json({ error: parsed.error.message }, { status: 400 });
   }
 
-  const { clientId, dueDate, currency, taxRate, notes, terms, lineItems } = parsed.data;
+  const { clientId, dueDate, currency, taxRate, discountAmount, notes, footer, lineItems } =
+    parsed.data;
 
-  // Verify the client belongs to the user
   const client = await prisma.client.findFirst({
     where: { id: clientId, userId: session.user.id },
   });
@@ -95,24 +100,39 @@ export async function POST(
 
   // Generate next invoice number
   const count = await prisma.invoice.count({ where: { userId: session.user.id } });
-  const number = `INV-${String(count + 1).padStart(4, "0")}`;
+  const invoiceNumber = `INV-${String(count + 1).padStart(4, "0")}`;
+
+  // Calculate totals (all in cents)
+  const subtotalCents = lineItems.reduce(
+    (sum, item) => sum + dollarsToCents(item.quantity * item.unitPrice),
+    0
+  );
+  const discountCents = dollarsToCents(discountAmount);
+  const taxableCents = subtotalCents - discountCents;
+  const taxCents = Math.round(taxableCents * (taxRate / 100));
+  const totalCents = taxableCents + taxCents;
 
   const invoice = await prisma.invoice.create({
     data: {
       userId: session.user.id,
       clientId,
-      number,
+      invoiceNumber,
       dueDate: new Date(dueDate),
       currency,
       taxRate,
+      taxAmount: taxCents,
+      discountAmount: discountCents,
+      subtotal: subtotalCents,
+      total: totalCents,
       notes,
-      terms,
+      footer,
       lineItems: {
         create: lineItems.map((item) => ({
           description: item.description,
           quantity: item.quantity,
-          unitPrice: item.unitPrice,
-          amount: item.quantity * item.unitPrice,
+          unitPrice: dollarsToCents(item.unitPrice),
+          amount: dollarsToCents(item.quantity * item.unitPrice),
+          sortOrder: item.sortOrder,
         })),
       },
     },
