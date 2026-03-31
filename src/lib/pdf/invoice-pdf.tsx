@@ -1,9 +1,15 @@
 import React from "react";
-import { Document, Page, Text, View, StyleSheet, renderToBuffer as _renderToBuffer } from "@react-pdf/renderer";
+import {
+  Document,
+  Page,
+  Text,
+  View,
+  StyleSheet,
+} from "@react-pdf/renderer";
 import type { InvoiceWithClient } from "@/types";
 import type { User } from "@prisma/client";
 
-// Re-export renderToBuffer from @react-pdf/renderer
+// Re-export renderToBuffer so callers import from one place
 export { renderToBuffer } from "@react-pdf/renderer";
 
 const styles = StyleSheet.create({
@@ -82,7 +88,7 @@ const styles = StyleSheet.create({
     color: "#6b7280",
   },
   totalsValue: {
-    width: 80,
+    width: 100,
     textAlign: "right",
   },
   grandTotal: {
@@ -102,17 +108,23 @@ const styles = StyleSheet.create({
 
 type InvoicePDFProps = {
   invoice: InvoiceWithClient;
-  user: Pick<User, "name" | "email" | "businessName" | "address" | "logoUrl"> | null;
+  user: Pick<
+    User,
+    "fullName" | "email" | "businessName" | "businessAddress" | "logoUrl"
+  > | null;
 };
 
-function formatCurrency(amount: number, currency: string): string {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(amount);
+/** Format cents to currency string (e.g. 250000 → "$2,500.00") */
+function formatCents(cents: number, currency: string): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency,
+    minimumFractionDigits: 2,
+  }).format(cents / 100);
 }
 
 export function InvoicePDF({ invoice, user }: InvoicePDFProps): React.ReactElement {
-  const subtotal = invoice.lineItems.reduce((sum, item) => sum + item.amount, 0);
-  const tax = subtotal * (invoice.taxRate / 100);
-  const total = subtotal + tax;
+  const { subtotal, taxAmount, discountAmount, total, taxRate, currency } = invoice;
 
   return (
     <Document>
@@ -120,32 +132,51 @@ export function InvoicePDF({ invoice, user }: InvoicePDFProps): React.ReactEleme
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.businessName}>{user?.businessName ?? user?.name ?? "Freelancer"}</Text>
-            {user?.address ? <Text style={styles.value}>{user.address}</Text> : null}
+            <Text style={styles.businessName}>
+              {user?.businessName ?? user?.fullName ?? "Freelancer"}
+            </Text>
+            {user?.businessAddress ? (
+              <Text style={styles.value}>{user.businessAddress}</Text>
+            ) : null}
             {user?.email ? <Text style={styles.value}>{user.email}</Text> : null}
           </View>
           <View>
             <Text style={styles.invoiceTitle}>INVOICE</Text>
-            <Text style={[styles.label, { textAlign: "right" }]}># {invoice.number}</Text>
+            <Text style={[styles.label, { textAlign: "right" }]}>
+              # {invoice.invoiceNumber}
+            </Text>
           </View>
         </View>
 
         <View style={styles.divider} />
 
         {/* Bill To + Dates */}
-        <View style={[styles.section, { flexDirection: "row", justifyContent: "space-between" }]}>
+        <View
+          style={[
+            styles.section,
+            { flexDirection: "row", justifyContent: "space-between" },
+          ]}
+        >
           <View>
             <Text style={styles.label}>BILL TO</Text>
             <Text style={[styles.value, styles.bold]}>{invoice.client.name}</Text>
-            {invoice.client.company ? <Text style={styles.value}>{invoice.client.company}</Text> : null}
+            {invoice.client.company ? (
+              <Text style={styles.value}>{invoice.client.company}</Text>
+            ) : null}
             <Text style={styles.value}>{invoice.client.email}</Text>
-            {invoice.client.address ? <Text style={styles.value}>{invoice.client.address}</Text> : null}
+            {invoice.client.address ? (
+              <Text style={styles.value}>{invoice.client.address}</Text>
+            ) : null}
           </View>
           <View style={{ alignItems: "flex-end" }}>
             <Text style={styles.label}>ISSUE DATE</Text>
-            <Text style={styles.value}>{new Date(invoice.issueDate).toLocaleDateString("en-US")}</Text>
+            <Text style={styles.value}>
+              {new Date(invoice.issueDate).toLocaleDateString("en-US")}
+            </Text>
             <Text style={[styles.label, { marginTop: 8 }]}>DUE DATE</Text>
-            <Text style={styles.value}>{new Date(invoice.dueDate).toLocaleDateString("en-US")}</Text>
+            <Text style={styles.value}>
+              {new Date(invoice.dueDate).toLocaleDateString("en-US")}
+            </Text>
           </View>
         </View>
 
@@ -162,9 +193,9 @@ export function InvoicePDF({ invoice, user }: InvoicePDFProps): React.ReactEleme
         {invoice.lineItems.map((item) => (
           <View key={item.id} style={styles.tableRow}>
             <Text style={styles.colWide}>{item.description}</Text>
-            <Text style={styles.col}>{item.quantity}</Text>
-            <Text style={styles.col}>{formatCurrency(item.unitPrice, invoice.currency)}</Text>
-            <Text style={styles.colRight}>{formatCurrency(item.amount, invoice.currency)}</Text>
+            <Text style={styles.col}>{Number(item.quantity)}</Text>
+            <Text style={styles.col}>{formatCents(item.unitPrice, currency)}</Text>
+            <Text style={styles.colRight}>{formatCents(item.amount, currency)}</Text>
           </View>
         ))}
 
@@ -173,18 +204,29 @@ export function InvoicePDF({ invoice, user }: InvoicePDFProps): React.ReactEleme
         {/* Totals */}
         <View style={styles.totalsRow}>
           <Text style={styles.totalsLabel}>Subtotal</Text>
-          <Text style={styles.totalsValue}>{formatCurrency(subtotal, invoice.currency)}</Text>
+          <Text style={styles.totalsValue}>{formatCents(subtotal, currency)}</Text>
         </View>
-        {invoice.taxRate > 0 ? (
+
+        {discountAmount > 0 ? (
           <View style={styles.totalsRow}>
-            <Text style={styles.totalsLabel}>Tax ({invoice.taxRate}%)</Text>
-            <Text style={styles.totalsValue}>{formatCurrency(tax, invoice.currency)}</Text>
+            <Text style={styles.totalsLabel}>Discount</Text>
+            <Text style={styles.totalsValue}>
+              -{formatCents(discountAmount, currency)}
+            </Text>
           </View>
         ) : null}
+
+        {taxRate && Number(taxRate) > 0 ? (
+          <View style={styles.totalsRow}>
+            <Text style={styles.totalsLabel}>Tax ({Number(taxRate)}%)</Text>
+            <Text style={styles.totalsValue}>{formatCents(taxAmount, currency)}</Text>
+          </View>
+        ) : null}
+
         <View style={[styles.totalsRow, { marginTop: 8 }]}>
           <Text style={[styles.totalsLabel, styles.grandTotal]}>Total Due</Text>
           <Text style={[styles.totalsValue, styles.grandTotal]}>
-            {formatCurrency(total, invoice.currency)}
+            {formatCents(total, currency)}
           </Text>
         </View>
 
@@ -197,17 +239,17 @@ export function InvoicePDF({ invoice, user }: InvoicePDFProps): React.ReactEleme
         ) : null}
 
         {/* Payment Link */}
-        {invoice.stripePaymentLinkUrl ? (
+        {invoice.stripePaymentLinkId ? (
           <View style={[styles.section, { marginTop: 16 }]}>
             <Text style={styles.label}>PAY ONLINE</Text>
-            <Text style={[styles.value, { color: "#6366f1" }]}>{invoice.stripePaymentLinkUrl}</Text>
+            <Text style={[styles.value, { color: "#6366f1" }]}>
+              {`${process.env.NEXT_PUBLIC_APP_URL}/pay/${invoice.id}`}
+            </Text>
           </View>
         ) : null}
 
         {/* Footer */}
-        <Text style={styles.footer}>
-          Thank you for your business — Quick Invoice
-        </Text>
+        <Text style={styles.footer}>Thank you for your business — Quick Invoice</Text>
       </Page>
     </Document>
   );
