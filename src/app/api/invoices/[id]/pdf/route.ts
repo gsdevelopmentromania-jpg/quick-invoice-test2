@@ -4,11 +4,8 @@ import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 
 /**
- * GET /api/invoices/[id]/pdf
+ * GET /api/v1/invoices/[id]/pdf
  * Generates and streams a PDF for the given invoice.
- *
- * Note: PDF rendering with @react-pdf/renderer must run in a Node.js
- * environment. This route uses a dynamic import to avoid edge runtime issues.
  */
 export async function GET(
   _req: NextRequest,
@@ -19,21 +16,28 @@ export async function GET(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const invoice = await prisma.invoice.findFirst({
-    where: { id: params.id, userId: session.user.id },
-    include: { client: true, lineItems: true },
-  });
+  const [invoice, user] = await Promise.all([
+    prisma.invoice.findFirst({
+      where: { id: params.id, userId: session.user.id },
+      include: { client: true, lineItems: true },
+    }),
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        fullName: true,
+        email: true,
+        businessName: true,
+        businessAddress: true,
+        logoUrl: true,
+      },
+    }),
+  ]);
 
   if (!invoice) {
     return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { name: true, email: true, businessName: true, address: true, logoUrl: true },
-  });
-
-  // Dynamic import to keep this out of edge runtime
+  // Dynamic import to avoid edge runtime — PDF rendering needs Node.js
   const { renderToBuffer, InvoicePDF } = await import("@/lib/pdf/invoice-pdf");
 
   const pdfBuffer = await renderToBuffer(InvoicePDF({ invoice, user }));
@@ -41,7 +45,7 @@ export async function GET(
   return new NextResponse(pdfBuffer, {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename="invoice-${invoice.number}.pdf"`,
+      "Content-Disposition": `attachment; filename="invoice-${invoice.invoiceNumber}.pdf"`,
     },
   });
 }
