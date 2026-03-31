@@ -6,13 +6,14 @@ import stripe from "@/lib/stripe";
 import type { ApiResponse, InvoiceWithClient } from "@/types";
 
 /**
- * POST /api/invoices/[id]/send
+ * POST /api/v1/invoices/[id]/send
  * Marks invoice as SENT, creates a Stripe payment link, and emails the client.
+ * Monetary values in DB are stored as cents (integers).
  */
 export async function POST(
   _req: NextRequest,
   { params }: { params: { id: string } }
-): Promise<NextResponse<ApiResponse<InvoiceWithClient>>> {
+): Promise<NextResponse<ApiResponse<InvoiceWithClient & { paymentUrl: string | null }>>> {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -32,16 +33,15 @@ export async function POST(
   }
 
   if (invoice.lineItems.length === 0) {
-    return NextResponse.json({ error: "Invoice must have at least one line item" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invoice must have at least one line item" },
+      { status: 400 }
+    );
   }
 
-  // Calculate totals
-  const subtotal = invoice.lineItems.reduce((sum, item) => sum + item.amount, 0);
-  const tax = subtotal * (invoice.taxRate / 100);
-  const total = subtotal + tax;
-  const amountInCents = Math.round(total * 100);
+  // total is already in cents (stored as integer in DB)
+  const amountInCents = invoice.total;
 
-  // Create Stripe payment link
   let stripePaymentLinkUrl: string | null = null;
   let stripePaymentLinkId: string | null = null;
 
@@ -50,7 +50,7 @@ export async function POST(
       currency: invoice.currency.toLowerCase(),
       unit_amount: amountInCents,
       product_data: {
-        name: `Invoice ${invoice.number}`,
+        name: `Invoice ${invoice.invoiceNumber}`,
         metadata: { invoiceId: invoice.id },
       },
     });
@@ -70,22 +70,29 @@ export async function POST(
     stripePaymentLinkId = paymentLink.id;
   } catch (err) {
     console.error("Stripe payment link creation failed:", err);
-    // Non-fatal — invoice can still be sent without payment link
   }
 
-  // Update invoice to SENT
-  const updated = await prisma.invoice.update({
-    where: { id: params.id },
-    data: {
-      status: "SENT",
-      sentAt: new Date(),
-      stripePaymentLinkId,
-      stripePaymentLinkUrl,
-    },
-    include: { client: true, lineItems: true },
+  const updated = await prisma.$transaction(async (tx) => {
+    const inv = await tx.invoice.update({
+      where: { id: params.id },
+      data: {
+        status: "SENT",
+        sentAt: new Date(),
+        stripePaymentLinkId,
+      },
+      include: { client: true, lineItems: true },
+    });
+
+    await tx.invoiceActivity.create({
+      data: { invoiceId: inv.id, type: "SENT", metadata: { paymentUrl: stripePaymentLinkUrl } },
+    });
+
+    return inv;
   });
 
-  // TODO: Send email via Resend / Nodemailer (see src/lib/email.ts)
+  // TODO: Send email via Resend (src/lib/email.ts)
 
-  return NextResponse.json({ data: updated as InvoiceWithClient });
+  return NextResponse.json({
+    data: { ...(updated as InvoiceWithClient), paymentUrl: stripePaymentLinkUrl },
+  });
 }
