@@ -8,7 +8,7 @@
 
 ## Overview
 
-Full project scaffold for the Quick Invoice freelancer invoicing SaaS. Built on **Next.js 14 (App Router)**, **TypeScript (strict)**, **PostgreSQL via Prisma**, **NextAuth.js**, **Stripe**, and **@react-pdf/renderer**.
+Full project scaffold for the Quick Invoice freelancer invoicing SaaS. Built on **Next.js 14 (App Router)**, **TypeScript (strict)**, **PostgreSQL via Prisma ORM**, **NextAuth.js v4**, **Stripe**, and **@react-pdf/renderer**. Architecture follows the spec in `reports/architecture.md`.
 
 ---
 
@@ -19,9 +19,9 @@ Full project scaffold for the Quick Invoice freelancer invoicing SaaS. Built on 
 | Framework | Next.js 14 (App Router) |
 | Language | TypeScript 5.7 (strict mode) |
 | Database | PostgreSQL 16 + Prisma ORM |
-| Auth | NextAuth.js v4 (JWT + Prisma Adapter) |
+| Auth | NextAuth.js v4 (JWT + PrismaAdapter) |
 | Payments | Stripe (Payment Links + Webhooks) |
-| PDF | @react-pdf/renderer |
+| PDF | @react-pdf/renderer v3 |
 | Email | Nodemailer / Resend (pluggable) |
 | Styling | Tailwind CSS |
 | Validation | Zod |
@@ -39,7 +39,7 @@ Full project scaffold for the Quick Invoice freelancer invoicing SaaS. Built on 
 | `package.json` | All dependencies; npm scripts for dev, build, lint, db, test |
 | `tsconfig.json` | Strict TypeScript; target ES2017; path alias `@/*` → `src/*` |
 | `.eslintrc.json` | next/core-web-vitals + @typescript-eslint/recommended + prettier |
-| `.prettierrc` | Formatting: 2-space indent, 100-char width, double quotes |
+| `.prettierrc` | 2-space indent, 100-char width, double quotes |
 | `next.config.mjs` | Next.js 14 config (mjs extension required) |
 | `.gitignore` | Excludes node_modules, .next, .env*, coverage |
 
@@ -52,7 +52,7 @@ npm run type-check       # tsc --noEmit
 npm run lint             # ESLint
 npm run format           # Prettier write
 npm run db:generate      # prisma generate
-npm run db:migrate       # prisma migrate dev
+npm run db:migrate       # prisma migrate dev (local)
 npm run db:migrate:deploy # prisma migrate deploy (CI/prod)
 npm run db:seed          # Seed demo data
 npm run test:ci          # Jest (CI mode)
@@ -64,37 +64,53 @@ npm run test:ci          # Jest (CI mode)
 
 ### Schema (`prisma/schema.prisma`)
 
+**Design principles from architecture spec:**
+- ✅ All monetary values stored as **integers in cents** (avoids IEEE 754 float errors)
+- ✅ `@@map` directives for snake_case table names
+- ✅ `DIRECT_URL` for Supabase connection pooling (pgBouncer bypass for migrations)
+- ✅ Cascade deletes: user → clients → invoices → line_items
+
 **Models:**
 
-| Model | Purpose |
-|---|---|
-| `User` | Auth + billing (plan, stripeCustomerId, businessName) |
-| `Account` | NextAuth OAuth accounts |
-| `Session` | NextAuth sessions |
-| `VerificationToken` | Email verification |
-| `Client` | Freelancer's clients (name, email, company, address) |
-| `Invoice` | Core invoice (status, dueDate, currency, taxRate, Stripe links) |
-| `LineItem` | Invoice line items (description, qty, unitPrice, amount) |
+| Model | Table | Purpose |
+|---|---|---|
+| `User` | `users` | Business profile, plan, Stripe customer ID |
+| `Account` | `accounts` | NextAuth OAuth accounts |
+| `Session` | `sessions` | NextAuth sessions |
+| `VerificationToken` | `verification_tokens` | Email verification |
+| `Client` | `clients` | Freelancer's billable clients |
+| `Invoice` | `invoices` | Core invoice (cents-based amounts) |
+| `LineItem` | `line_items` | Invoice line items (qty as Decimal, prices in cents) |
+| `Payment` | `payments` | Stripe payment records |
+| `Subscription` | `subscriptions` | Stripe subscription tracking |
+| `InvoiceActivity` | `invoice_activities` | Append-only audit log |
 
 **Enums:**
 - `InvoiceStatus`: `DRAFT` → `SENT` → `VIEWED` → `PAID` / `OVERDUE` / `CANCELLED`
 - `Plan`: `FREE` | `PRO` | `TEAM`
+- `PaymentStatus`: `PENDING` | `SUCCEEDED` | `FAILED` | `REFUNDED`
+- `SubscriptionStatus`: `ACTIVE` | `PAST_DUE` | `CANCELLED` | `UNPAID` | `TRIALING`
 
-### Initial Migration (`prisma/migrations/20260101000000_init/migration.sql`)
+### Migration
 
-Full DDL for all tables, indexes, and foreign keys. Applied via:
+```
+prisma/migrations/20260101000000_init/migration.sql
+```
+
+Full DDL for all tables, indexes, and foreign keys. Run via:
 
 ```bash
-npm run db:migrate:deploy   # Production / CI
-npm run db:migrate          # Development (with prompts)
+npm run db:migrate         # dev (creates migration)
+npm run db:migrate:deploy  # prod/CI (applies existing migrations)
 ```
 
 ### Seed Data (`prisma/seed.ts`)
 
 Creates:
-- 1 demo user (`demo@quickinvoice.app` / `password123`)
+- 1 demo user (`demo@quickinvoice.app`)
 - 2 demo clients (Acme Corp, StartupCo)
-- 3 demo invoices (PAID, SENT, DRAFT states)
+- 3 demo invoices (PAID $2,500 | SENT $1,650 with 10% tax | DRAFT $3,000)
+- All monetary values stored correctly as cents
 
 ```bash
 npm run db:seed
@@ -108,35 +124,38 @@ npm run db:seed
 
 | File | Purpose |
 |---|---|
-| `src/lib/auth.ts` | NextAuth config: credentials + Google + GitHub OAuth |
-| `src/middleware.ts` | Protects `/dashboard/**`, `/invoices/**`, `/clients/**`, `/api/invoices/**`, `/api/clients/**` |
+| `src/lib/auth.ts` | NextAuth config: Google + GitHub OAuth + credentials stub |
+| `src/middleware.ts` | Protects dashboard, invoice, client, API routes |
 | `src/app/api/auth/[...nextauth]/route.ts` | NextAuth route handler |
-| `src/app/api/auth/register/route.ts` | Email/password registration |
+| `src/app/api/auth/register/route.ts` | Creates User profile after Supabase Auth signup |
 | `src/types/next-auth.d.ts` | Session type augmentation (adds `user.id`) |
 
 ### Auth Strategy
 - **JWT sessions** (no DB session lookups on every request)
-- **Credentials**: bcrypt password hash (12 rounds)
-- **OAuth**: Google + GitHub (extensible)
-- **Adapter**: PrismaAdapter stores OAuth accounts
+- **OAuth**: Google + GitHub via PrismaAdapter
+- **Credentials**: Placeholder (Supabase Auth recommended per architecture spec)
 
 ---
 
 ## 4. API Route Stubs
 
-All routes return `ApiResponse<T>` typed responses and include Zod input validation.
+All routes return `ApiResponse<T>` typed responses with Zod input validation.
+Monetary inputs accepted as **dollars** (floats); converted to **cents** on server.
 
 ### Invoice Endpoints
 
 | Method | Route | Description |
 |---|---|---|
-| `GET` | `/api/invoices` | List invoices (paginated, filterable by status) |
-| `POST` | `/api/invoices` | Create invoice (DRAFT) with line items |
-| `GET` | `/api/invoices/[id]` | Get single invoice (auto-marks SENT→VIEWED) |
-| `PATCH` | `/api/invoices/[id]` | Update invoice (blocked on PAID/CANCELLED) |
-| `DELETE` | `/api/invoices/[id]` | Hard-delete DRAFT; soft-cancel others |
-| `POST` | `/api/invoices/[id]/send` | Send invoice: creates Stripe Payment Link, marks SENT |
-| `GET` | `/api/invoices/[id]/pdf` | Stream PDF for download |
+| `GET` | `/api/invoices` | List invoices (paginated, filterable by `status` + `clientId`) |
+| `POST` | `/api/invoices` | Create invoice (DRAFT) — computes subtotal/tax/total in cents |
+| `GET` | `/api/invoices/[id]` | Get invoice (auto-marks SENT→VIEWED + logs activity) |
+| `PATCH` | `/api/invoices/[id]` | Update invoice (recalculates totals) |
+| `DELETE` | `/api/invoices/[id]` | Hard-delete DRAFT only |
+| `POST` | `/api/invoices/[id]/send` | Send: creates Stripe Payment Link, marks SENT, logs activity |
+| `GET` | `/api/invoices/[id]/pdf` | Stream PDF download |
+| `POST` | `/api/invoices/[id]/duplicate` | Clone invoice as new DRAFT |
+| `PATCH` | `/api/invoices/[id]/status` | Manual status update (e.g., mark PAID) |
+| `POST` | `/api/invoices/[id]/reminder` | Send payment reminder email |
 
 ### Client Endpoints
 
@@ -144,107 +163,52 @@ All routes return `ApiResponse<T>` typed responses and include Zod input validat
 |---|---|---|
 | `GET` | `/api/clients` | List clients (paginated, searchable) |
 | `POST` | `/api/clients` | Create client |
-| `GET` | `/api/clients/[id]` | Get single client |
+| `GET` | `/api/clients/[id]` | Get client |
 | `PATCH` | `/api/clients/[id]` | Update client |
 | `DELETE` | `/api/clients/[id]` | Delete client |
 
-### Webhook & User Endpoints
+### Other Endpoints
 
 | Method | Route | Description |
 |---|---|---|
-| `POST` | `/api/webhooks/stripe` | Handle Stripe events (payment completed, subscription changes) |
+| `POST` | `/api/webhooks/stripe` | Stripe webhook handler (payment, subscription events) |
 | `GET` | `/api/user/profile` | Get current user profile |
-| `PATCH` | `/api/user/profile` | Update profile (businessName, currency, logoUrl, etc.) |
-
-### Invoice Send Flow
-
-```
-POST /api/invoices/[id]/send
-  → Validate: status must be DRAFT
-  → Calculate subtotal + tax → total
-  → Create Stripe Price (unit_amount in cents)
-  → Create Stripe PaymentLink (with invoiceId metadata)
-  → Update invoice: status=SENT, sentAt, stripePaymentLinkUrl
-  → Send email via src/lib/email.ts (sendInvoiceEmail)
-```
-
-### Stripe Webhook Flow
-
-```
-POST /api/webhooks/stripe
-  → Verify signature with STRIPE_WEBHOOK_SECRET
-  → checkout.session.completed → mark invoice PAID
-  → customer.subscription.deleted → downgrade user to FREE
-  → customer.subscription.updated → sync plan
-```
+| `PATCH` | `/api/user/profile` | Update profile |
 
 ---
 
-## 5. Email (`src/lib/email.ts`)
-
-Pluggable email utility using Nodemailer (SMTP):
-
-```typescript
-import { sendInvoiceEmail, sendPasswordResetEmail } from "@/lib/email";
-
-// Send invoice to client with optional Stripe payment button
-await sendInvoiceEmail({
-  invoice,               // InvoiceWithClient (includes lineItems + client)
-  paymentUrl,            // Stripe Payment Link URL (optional)
-  senderName: "Alex",
-  senderEmail: "alex@example.com",
-});
-
-// Send password reset link
-await sendPasswordResetEmail({ to: "user@example.com", resetUrl });
-```
-
-**To swap to Resend:** Replace the `nodemailer.createTransport()` call with `new Resend(process.env.RESEND_API_KEY)` and update `sendMail` → `emails.send`.
-
-Required env vars: `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM`
-
----
-
-## 6. PDF Generation (`src/lib/pdf/invoice-pdf.tsx`)
+## 5. PDF Generation (`src/lib/pdf/invoice-pdf.tsx`)
 
 React component using `@react-pdf/renderer`:
-- Business name/address header
+- Business header (businessName, businessAddress)
 - Bill-to client info + issue/due dates
-- Line items table with qty, unit price, amount
-- Subtotal, tax, total due
-- Optional Stripe payment link embedded
-- Exported via `/api/invoices/[id]/pdf` as `application/pdf`
+- Line items table (quantity as Decimal, prices from cents)
+- Subtotal, discount, tax, total (all from cents)
+- Stripe payment link embedded if available
 
 ---
 
-## 7. Testing (`jest.config.js`, `jest.setup.js`)
+## 6. Email (`src/lib/email.ts`)
 
-| File | Purpose |
-|---|---|
-| `jest.config.js` | Jest config using `next/jest` (SWC transform, no ts-jest needed) |
-| `jest.setup.js` | Stubs env vars (NEXTAUTH_SECRET, DATABASE_URL, STRIPE_SECRET_KEY) |
-
-```bash
-npm run test         # Run all tests
-npm run test:watch   # Watch mode
-npm run test:ci      # CI mode (no watch, fail on missing tests OK)
-```
-
-Tests go in `src/**/__tests__/*.test.ts`. Coverage threshold: 50% across all metrics.
+Nodemailer-based with pluggable transport:
+- `sendInvoiceEmail()` — HTML invoice email with payment link
+- `sendPasswordResetEmail()` — Password reset link
+- Swap for Resend SDK by replacing `nodemailer.sendMail()` calls
 
 ---
 
-## 8. Environment Variables (`.env.example`)
+## 7. Environment Variables (`.env.example`)
 
 ```bash
 # App
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 
-# Database
-DATABASE_URL=postgresql://postgres:password@localhost:5432/quick_invoice
+# Database (Supabase)
+DATABASE_URL=postgresql://...@pooler.supabase.com:6543/postgres?pgbouncer=true
+DIRECT_URL=postgresql://...@pooler.supabase.com:5432/postgres
 
 # NextAuth
-NEXTAUTH_SECRET=         # openssl rand -base64 32
+NEXTAUTH_SECRET=          # openssl rand -base64 32
 NEXTAUTH_URL=http://localhost:3000
 
 # OAuth
@@ -255,98 +219,63 @@ GITHUB_CLIENT_SECRET=
 
 # Stripe
 STRIPE_SECRET_KEY=sk_test_...
-STRIPE_PUBLISHABLE_KEY=pk_test_...
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 STRIPE_PRO_PRICE_ID=price_...
 STRIPE_TEAM_PRICE_ID=price_...
 
-# Email (Resend or SMTP)
+# Email
 RESEND_API_KEY=re_...
-SMTP_HOST=
 EMAIL_FROM=noreply@quickinvoice.app
 
-# Storage (logo uploads)
-STORAGE_BUCKET=
-STORAGE_ACCESS_KEY_ID=
+# Supabase Storage
+NEXT_PUBLIC_SUPABASE_URL=https://[PROJECT-REF].supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
+SUPABASE_SERVICE_ROLE_KEY=eyJ...
 ```
 
 ---
 
-## 9. CI/CD Pipeline
+## 8. CI/CD Pipeline (`github-workflows/`)
 
-> **Note:** GitHub API restricts writing to `.github/workflows/` on non-default branches. Workflows are stored in `github-workflows/` and must be **moved** to `.github/workflows/` after merging to `main`.
->
-> ```bash
-> cp -r github-workflows/ .github/workflows/
-> ```
+> **⚠️ Note:** Saved to `github-workflows/` — rename to `.github/workflows/` when configuring the repository (GitHub API restriction on this branch).
 
-### `github-workflows/ci.yml` — Runs on every push/PR
+### `ci.yml` — Runs on every push/PR
 
 **Jobs:**
 1. **lint-and-type-check** — `tsc --noEmit` + ESLint + Prettier check
 2. **test** — Spins up PostgreSQL 16 service, runs migrations, runs Jest
 3. **build** — `next build` (requires lint to pass)
 
-### `github-workflows/deploy.yml` — Runs on `main` branch push
+### `deploy.yml` — Runs on `main` push
 
-**Steps:**
-1. Install + generate Prisma
-2. Run production migrations (`prisma migrate deploy`)
-3. Deploy to Vercel via `amondnet/vercel-action`
+1. Run production migrations
+2. Deploy to Vercel via `amondnet/vercel-action`
 
-**Required GitHub Secrets:**
-```
-DATABASE_URL          Production PostgreSQL URL
-VERCEL_TOKEN          Vercel API token
-VERCEL_ORG_ID         Vercel org ID
-VERCEL_PROJECT_ID     Vercel project ID
-```
+**Required Secrets:** `DATABASE_URL`, `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`
 
 ---
 
-## 10. Docker Setup
+## 9. Docker Setup
 
 ### `Dockerfile` — Multi-stage production build
 
 | Stage | Purpose |
 |---|---|
-| `deps` | Install npm dependencies + generate Prisma |
-| `builder` | `next build` with build args for env vars |
-| `runner` | Minimal Alpine image; non-root user; standalone output |
+| `deps` | Install npm deps + generate Prisma |
+| `builder` | `next build` with build args |
+| `runner` | Alpine, non-root user, standalone output |
 
 ### `docker-compose.yml` — Local development
 
-**Services:**
-- `postgres` — PostgreSQL 16 on port 5432 with health check
-- `app` — Next.js app on port 3000 (depends on postgres)
-- `stripe-cli` — Stripe webhook forwarding (opt-in via `--profile stripe`)
-
 ```bash
-# Start all services
-docker-compose up -d
-
-# Start with Stripe webhook forwarding
-docker-compose --profile stripe up -d
+docker-compose up -d                          # DB + app
+docker-compose --profile stripe up -d        # + Stripe webhook forwarding
 ```
 
 ---
 
-## Next Steps
-
-| Priority | Action |
-|---|---|
-| 🔴 High | Move `github-workflows/` → `.github/workflows/` after merging to main |
-| 🔴 High | Add Tailwind CSS config and install `tailwindcss` dependency |
-| 🔴 High | Add `output: "standalone"` to `next.config.mjs` for Docker |
-| 🟡 Medium | Build dashboard UI (`/dashboard`, `/invoices`, `/clients` pages) |
-| 🟡 Medium | Add invoice number auto-increment as a DB sequence |
-| 🟡 Medium | Write API integration tests |
-| 🟢 Low | Add Sentry error tracking |
-| 🟢 Low | Add rate limiting middleware |
-
----
-
-## Directory Structure
+## Complete File Structure
 
 ```
 quick-invoice/
@@ -356,21 +285,20 @@ quick-invoice/
 ├── .prettierrc
 ├── Dockerfile
 ├── docker-compose.yml
-├── jest.config.js                ← NEW: Jest config (next/jest SWC transform)
-├── jest.setup.js                 ← NEW: env stubs for tests
+├── jest.config.js
+├── jest.setup.js
 ├── next.config.mjs
 ├── package.json
 ├── tsconfig.json
-├── github-workflows/             ← rename to .github/workflows/ post-merge
+├── github-workflows/       ← rename to .github/workflows/
 │   ├── ci.yml
 │   └── deploy.yml
 ├── prisma/
 │   ├── schema.prisma
 │   ├── seed.ts
 │   └── migrations/
-│       ├── migration_lock.toml   ← NEW
-│       └── 20260101000000_init/
-│           └── migration.sql     ← NEW: full DDL for all tables
+│       ├── migration_lock.toml
+│       └── 20260101000000_init/migration.sql
 └── src/
     ├── app/
     │   ├── layout.tsx
@@ -385,7 +313,10 @@ quick-invoice/
     │       │   └── [id]/
     │       │       ├── route.ts
     │       │       ├── send/route.ts
-    │       │       └── pdf/route.ts
+    │       │       ├── pdf/route.ts
+    │       │       ├── duplicate/route.ts
+    │       │       ├── status/route.ts
+    │       │       └── reminder/route.ts
     │       ├── clients/
     │       │   ├── route.ts
     │       │   └── [id]/route.ts
@@ -395,7 +326,7 @@ quick-invoice/
     │           └── stripe/route.ts
     ├── lib/
     │   ├── auth.ts
-    │   ├── email.ts              ← NEW: Nodemailer/Resend utility
+    │   ├── email.ts
     │   ├── prisma.ts
     │   ├── stripe.ts
     │   └── pdf/
@@ -405,6 +336,21 @@ quick-invoice/
         ├── index.ts
         └── next-auth.d.ts
 ```
+
+---
+
+## Next Steps
+
+| Priority | Action |
+|---|---|
+| 🔴 High | Add `output: "standalone"` to `next.config.mjs` for Docker builds |
+| 🔴 High | Add `tailwindcss` + `postcss` config + `shadcn/ui` setup |
+| 🔴 High | Build dashboard UI pages (`/dashboard`, `/invoices`, `/clients`) |
+| 🟡 Medium | Integrate Resend SDK for email (replace Nodemailer) |
+| 🟡 Medium | Add invoice number auto-increment as a DB sequence |
+| 🟡 Medium | Write API integration tests |
+| 🟢 Low | Add Sentry error tracking |
+| 🟢 Low | Add rate limiting middleware (e.g., Upstash Ratelimit) |
 
 ---
 
