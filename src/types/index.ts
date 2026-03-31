@@ -5,7 +5,7 @@ import type { Invoice, LineItem, Client, User } from "@prisma/client";
 // ─────────────────────────────────────────
 
 export type { Invoice, LineItem, Client, User } from "@prisma/client";
-export { InvoiceStatus, Plan } from "@prisma/client";
+export { InvoiceStatus, Plan, PaymentStatus, SubscriptionStatus } from "@prisma/client";
 
 // ─────────────────────────────────────────
 // Composite / enriched types
@@ -20,10 +20,21 @@ export type InvoiceWithClient = Invoice & {
   lineItems: LineItem[];
 };
 
-export type UserWithRelations = User & {
-  invoices: Invoice[];
-  clients: Client[];
-};
+export type UserSafe = Omit<User, never>; // No passwordHash in this schema
+
+// ─────────────────────────────────────────
+// Money helpers (values stored as cents in DB)
+// ─────────────────────────────────────────
+
+/** Convert cents (integer) to dollars for display */
+export function centsToDollars(cents: number): number {
+  return cents / 100;
+}
+
+/** Convert dollars to cents for storage */
+export function dollarsToCents(dollars: number): number {
+  return Math.round(dollars * 100);
+}
 
 // ─────────────────────────────────────────
 // API request / response shapes
@@ -31,17 +42,21 @@ export type UserWithRelations = User & {
 
 export interface LineItemInput {
   description: string;
+  /** Quantity as a decimal (e.g. 2.5 hours) */
   quantity: number;
+  /** Unit price in dollars (converted to cents on server) */
   unitPrice: number;
+  sortOrder?: number;
 }
 
 export interface CreateInvoiceInput {
   clientId: string;
-  dueDate: string;
-  currency?: string;
-  taxRate?: number;
+  dueDate: string;         // ISO 8601
+  currency?: string;       // ISO 4217, default "USD"
+  taxRate?: number;        // percentage e.g. 10 = 10%
+  discountAmount?: number; // dollars
   notes?: string;
-  terms?: string;
+  footer?: string;
   lineItems: LineItemInput[];
 }
 
@@ -50,8 +65,9 @@ export interface UpdateInvoiceInput {
   dueDate?: string;
   currency?: string;
   taxRate?: number;
+  discountAmount?: number;
   notes?: string;
-  terms?: string;
+  footer?: string;
   lineItems?: LineItemInput[];
 }
 
@@ -61,6 +77,7 @@ export interface CreateClientInput {
   company?: string;
   address?: string;
   phone?: string;
+  currency?: string;
   notes?: string;
 }
 
@@ -70,7 +87,18 @@ export interface UpdateClientInput {
   company?: string;
   address?: string;
   phone?: string;
+  currency?: string;
   notes?: string;
+}
+
+export interface UpdateProfileInput {
+  fullName?: string;
+  businessName?: string;
+  businessAddress?: string;
+  businessPhone?: string;
+  currency?: string;
+  locale?: string;
+  logoUrl?: string;
 }
 
 // ─────────────────────────────────────────
@@ -87,16 +115,16 @@ export interface PaginatedResponse<T> {
   data: T[];
   total: number;
   page: number;
-  pageSize: number;
-  totalPages: number;
+  limit: number;
 }
 
 // ─────────────────────────────────────────
-// Invoice computed helpers
+// Invoice computed totals (display layer)
 // ─────────────────────────────────────────
 
 export interface InvoiceTotals {
-  subtotal: number;
-  tax: number;
-  total: number;
+  subtotalCents: number;
+  taxAmountCents: number;
+  discountAmountCents: number;
+  totalCents: number;
 }
