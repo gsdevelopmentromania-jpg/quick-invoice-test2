@@ -39,8 +39,13 @@ export interface SendPasswordResetEmailOptions {
 // Helpers
 // ─────────────────────────────────────────
 
-function formatCurrency(amount: number, currency: string): string {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(amount);
+/** Format cents to a currency string (e.g. 250000 → "$2,500.00") */
+function formatCents(cents: number, currency: string): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency,
+    minimumFractionDigits: 2,
+  }).format(cents / 100);
 }
 
 // ─────────────────────────────────────────
@@ -50,30 +55,28 @@ function formatCurrency(amount: number, currency: string): string {
 export async function sendInvoiceEmail(opts: SendInvoiceEmailOptions): Promise<void> {
   const { invoice, paymentUrl, senderName, senderEmail } = opts;
 
-  const subtotal = invoice.lineItems.reduce((sum, item) => sum + item.amount, 0);
-  const tax = subtotal * (invoice.taxRate / 100);
-  const total = subtotal + tax;
-
   const lineItemRows = invoice.lineItems
     .map(
       (item) =>
         `<tr>
           <td>${item.description}</td>
-          <td>${item.quantity}</td>
-          <td>${formatCurrency(item.unitPrice, invoice.currency)}</td>
-          <td>${formatCurrency(item.amount, invoice.currency)}</td>
+          <td>${Number(item.quantity)}</td>
+          <td>${formatCents(item.unitPrice, invoice.currency)}</td>
+          <td>${formatCents(item.amount, invoice.currency)}</td>
         </tr>`
     )
     .join("\n");
 
   const paymentSection = paymentUrl
-    ? `<p><a href="${paymentUrl}" style="background:#2563eb;color:#fff;padding:12px 24px;text-decoration:none;border-radius:6px;">Pay Now</a></p>`
+    ? `<p><a href="${paymentUrl}" style="background:#6366f1;color:#fff;padding:12px 24px;text-decoration:none;border-radius:6px;">Pay Now</a></p>`
     : "";
+
+  const taxRateNum = Number(invoice.taxRate ?? 0);
 
   const html = `
     <html>
       <body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px">
-        <h2>Invoice ${invoice.number} from ${senderName}</h2>
+        <h2>Invoice ${invoice.invoiceNumber} from ${senderName}</h2>
         <p>Due: ${new Date(invoice.dueDate).toLocaleDateString("en-US")}</p>
         <table border="1" cellpadding="8" cellspacing="0" width="100%" style="border-collapse:collapse">
           <thead>
@@ -83,9 +86,10 @@ export async function sendInvoiceEmail(opts: SendInvoiceEmailOptions): Promise<v
           </thead>
           <tbody>${lineItemRows}</tbody>
         </table>
-        <p>Subtotal: ${formatCurrency(subtotal, invoice.currency)}</p>
-        ${invoice.taxRate > 0 ? `<p>Tax (${invoice.taxRate}%): ${formatCurrency(tax, invoice.currency)}</p>` : ""}
-        <p><strong>Total: ${formatCurrency(total, invoice.currency)}</strong></p>
+        <p>Subtotal: ${formatCents(invoice.subtotal, invoice.currency)}</p>
+        ${invoice.discountAmount > 0 ? `<p>Discount: -${formatCents(invoice.discountAmount, invoice.currency)}</p>` : ""}
+        ${taxRateNum > 0 ? `<p>Tax (${taxRateNum}%): ${formatCents(invoice.taxAmount, invoice.currency)}</p>` : ""}
+        <p><strong>Total: ${formatCents(invoice.total, invoice.currency)}</strong></p>
         ${paymentSection}
         <p style="color:#6b7280;font-size:12px">Sent by ${senderName} &lt;${senderEmail}&gt;</p>
       </body>
@@ -97,7 +101,7 @@ export async function sendInvoiceEmail(opts: SendInvoiceEmailOptions): Promise<v
   await transporter.sendMail({
     from: `"${senderName}" <${process.env.EMAIL_FROM ?? senderEmail}>`,
     to: invoice.client.email,
-    subject: `Invoice ${invoice.number} — ${formatCurrency(total, invoice.currency)} due ${new Date(invoice.dueDate).toLocaleDateString("en-US")}`,
+    subject: `Invoice ${invoice.invoiceNumber} — ${formatCents(invoice.total, invoice.currency)} due ${new Date(invoice.dueDate).toLocaleDateString("en-US")}`,
     html,
   });
 }
@@ -120,7 +124,7 @@ export async function sendPasswordResetEmail(opts: SendPasswordResetEmailOptions
         <body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px">
           <h2>Password Reset</h2>
           <p>Click the button below to reset your password. This link expires in 1 hour.</p>
-          <p><a href="${resetUrl}" style="background:#2563eb;color:#fff;padding:12px 24px;text-decoration:none;border-radius:6px;">Reset Password</a></p>
+          <p><a href="${resetUrl}" style="background:#6366f1;color:#fff;padding:12px 24px;text-decoration:none;border-radius:6px;">Reset Password</a></p>
           <p style="color:#6b7280;font-size:12px">If you didn't request this, you can safely ignore this email.</p>
         </body>
       </html>
