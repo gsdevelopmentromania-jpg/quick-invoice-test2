@@ -1,22 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";
 import type { ApiResponse } from "@/types";
 
 const registerSchema = z.object({
-  name: z.string().min(1, "Name is required"),
+  id: z.string().uuid("Must be a valid Supabase auth.users UUID"),
   email: z.string().email("Invalid email address"),
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters")
-    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
-    .regex(/[0-9]/, "Password must contain at least one number"),
+  fullName: z.string().min(1, "Full name is required").optional(),
 });
 
 /**
  * POST /api/auth/register
- * Creates a new user account with email/password.
+ *
+ * Creates a User profile record after Supabase Auth signup.
+ * Called server-side after `supabase.auth.signUp()` succeeds.
+ *
+ * The `id` must match the UUID from Supabase auth.users.
+ * Password management is handled entirely by Supabase Auth.
  */
 export async function POST(
   req: NextRequest
@@ -28,18 +28,22 @@ export async function POST(
     return NextResponse.json({ error: parsed.error.message }, { status: 400 });
   }
 
-  const { name, email, password } = parsed.data;
+  const { id, email, fullName } = parsed.data;
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
-    return NextResponse.json({ error: "An account with this email already exists" }, { status: 409 });
+    return NextResponse.json(
+      { error: "A profile for this email already exists" },
+      { status: 409 }
+    );
   }
 
-  const passwordHash = await bcrypt.hash(password, 12);
-
   await prisma.user.create({
-    data: { name, email, passwordHash },
+    data: { id, email, fullName },
   });
 
-  return NextResponse.json({ data: { email }, message: "Account created successfully" }, { status: 201 });
+  return NextResponse.json(
+    { data: { email }, message: "Profile created successfully" },
+    { status: 201 }
+  );
 }
