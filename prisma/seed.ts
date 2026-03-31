@@ -3,10 +3,14 @@ import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
+/** Convert dollars to cents */
+function toCents(dollars: number): number {
+  return Math.round(dollars * 100);
+}
+
 async function main(): Promise<void> {
   console.warn("🌱 Seeding database...");
 
-  // Create demo user
   const passwordHash = await bcrypt.hash("password123", 12);
 
   const user = await prisma.user.upsert({
@@ -14,17 +18,16 @@ async function main(): Promise<void> {
     update: {},
     create: {
       email: "demo@quickinvoice.app",
-      name: "Alex Demo",
-      passwordHash,
+      fullName: "Alex Demo",
       plan: Plan.PRO,
       businessName: "Alex Demo Studio",
       currency: "USD",
+      locale: "en-US",
     },
   });
 
   console.warn(`✅ Demo user created: ${user.email}`);
 
-  // Create demo clients
   const client1 = await prisma.client.upsert({
     where: { id: "seed-client-1" },
     update: {},
@@ -53,13 +56,11 @@ async function main(): Promise<void> {
 
   console.warn(`✅ Demo clients created`);
 
-  // Create demo invoices
   const dueDate = new Date();
   dueDate.setDate(dueDate.getDate() + 30);
 
-  const pastDue = new Date();
-  pastDue.setDate(pastDue.getDate() - 10);
-
+  // Invoice 1 — PAID: Website redesign + SEO ($2,500)
+  const inv1Subtotal = toCents(2500);
   await prisma.invoice.upsert({
     where: { id: "seed-invoice-1" },
     update: {},
@@ -67,32 +68,40 @@ async function main(): Promise<void> {
       id: "seed-invoice-1",
       userId: user.id,
       clientId: client1.id,
-      number: "INV-0001",
+      invoiceNumber: "INV-0001",
       status: InvoiceStatus.PAID,
-      dueDate,
       currency: "USD",
+      dueDate,
+      subtotal: inv1Subtotal,
       taxRate: 0,
+      taxAmount: 0,
+      discountAmount: 0,
+      total: inv1Subtotal,
       paidAt: new Date(),
-      paidAmount: 2500,
       lineItems: {
         create: [
           {
             description: "Website redesign",
             quantity: 1,
-            unitPrice: 2000,
-            amount: 2000,
+            unitPrice: toCents(2000),
+            amount: toCents(2000),
+            sortOrder: 0,
           },
           {
             description: "SEO setup",
             quantity: 1,
-            unitPrice: 500,
-            amount: 500,
+            unitPrice: toCents(500),
+            amount: toCents(500),
+            sortOrder: 1,
           },
         ],
       },
     },
   });
 
+  // Invoice 2 — SENT: Brand identity ($1,500 + 10% tax = $1,650)
+  const inv2Subtotal = toCents(1500);
+  const inv2Tax = Math.round(inv2Subtotal * 0.1);
   await prisma.invoice.upsert({
     where: { id: "seed-invoice-2" },
     update: {},
@@ -100,25 +109,32 @@ async function main(): Promise<void> {
       id: "seed-invoice-2",
       userId: user.id,
       clientId: client2.id,
-      number: "INV-0002",
+      invoiceNumber: "INV-0002",
       status: InvoiceStatus.SENT,
-      dueDate,
       currency: "USD",
+      dueDate,
+      subtotal: inv2Subtotal,
       taxRate: 10,
+      taxAmount: inv2Tax,
+      discountAmount: 0,
+      total: inv2Subtotal + inv2Tax,
       sentAt: new Date(),
       lineItems: {
         create: [
           {
             description: "Brand identity design",
             quantity: 1,
-            unitPrice: 1500,
-            amount: 1500,
+            unitPrice: toCents(1500),
+            amount: toCents(1500),
+            sortOrder: 0,
           },
         ],
       },
     },
   });
 
+  // Invoice 3 — DRAFT: Monthly retainer ($3,000)
+  const inv3Subtotal = toCents(3000);
   await prisma.invoice.upsert({
     where: { id: "seed-invoice-3" },
     update: {},
@@ -126,18 +142,23 @@ async function main(): Promise<void> {
       id: "seed-invoice-3",
       userId: user.id,
       clientId: client1.id,
-      number: "INV-0003",
+      invoiceNumber: "INV-0003",
       status: InvoiceStatus.DRAFT,
-      dueDate,
       currency: "USD",
+      dueDate,
+      subtotal: inv3Subtotal,
       taxRate: 0,
+      taxAmount: 0,
+      discountAmount: 0,
+      total: inv3Subtotal,
       lineItems: {
         create: [
           {
             description: "Monthly retainer — April 2026",
             quantity: 1,
-            unitPrice: 3000,
-            amount: 3000,
+            unitPrice: toCents(3000),
+            amount: toCents(3000),
+            sortOrder: 0,
           },
         ],
       },
