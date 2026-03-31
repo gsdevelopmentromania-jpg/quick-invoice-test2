@@ -1,17 +1,14 @@
+const nextJest = require("next/jest");
+
+const createJestConfig = nextJest({
+  // Path to your Next.js app (for loading next.config.mjs and .env files)
+  dir: "./",
+});
+
 /** @type {import('jest').Config} */
-const config = {
+const customConfig = {
   testEnvironment: "jest-environment-node",
   testMatch: ["**/__tests__/**/*.test.ts", "**/*.test.ts"],
-  transform: {
-    "^.+\\.tsx?$": [
-      "ts-jest",
-      {
-        tsconfig: {
-          module: "commonjs",
-        },
-      },
-    ],
-  },
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",
   },
@@ -32,4 +29,4 @@ const config = {
   },
 };
 
-module.exports = config;
+module.exports = createJestConfig(customConfig);
