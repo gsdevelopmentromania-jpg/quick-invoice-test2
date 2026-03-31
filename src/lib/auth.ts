@@ -46,21 +46,16 @@ export const authOptions: NextAuthOptions = {
           where: { email: credentials.email },
         });
 
-        if (!user || !user.passwordHash) {
+        if (!user) {
           return null;
         }
 
-        const isValid = await bcrypt.compare(credentials.password, user.passwordHash);
-        if (!isValid) {
-          return null;
-        }
-
-        return {
-          id: user.id,
-          email: user.email ?? "",
-          name: user.name,
-          image: user.image,
-        };
+        // Note: passwordHash is not in the new schema.
+        // For credentials auth, a separate auth table or Supabase Auth is required.
+        // This provider is a placeholder — integrate Supabase Auth or add a
+        // passwordHash field to the User model for email/password sign-in.
+        console.warn("Credentials provider: passwordHash not in schema. Skipping password check.");
+        return null;
       },
     }),
   ],
