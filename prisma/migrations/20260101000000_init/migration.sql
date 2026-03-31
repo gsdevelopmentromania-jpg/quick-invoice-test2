@@ -4,8 +4,14 @@ CREATE TYPE "Plan" AS ENUM ('FREE', 'PRO', 'TEAM');
 -- CreateEnum
 CREATE TYPE "InvoiceStatus" AS ENUM ('DRAFT', 'SENT', 'VIEWED', 'PAID', 'OVERDUE', 'CANCELLED');
 
--- CreateTable
-CREATE TABLE "Account" (
+-- CreateEnum
+CREATE TYPE "PaymentStatus" AS ENUM ('PENDING', 'SUCCEEDED', 'FAILED', 'REFUNDED');
+
+-- CreateEnum
+CREATE TYPE "SubscriptionStatus" AS ENUM ('ACTIVE', 'PAST_DUE', 'CANCELLED', 'UNPAID', 'TRIALING');
+
+-- CreateTable (NextAuth adapter)
+CREATE TABLE "accounts" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "type" TEXT NOT NULL,
@@ -18,53 +24,46 @@ CREATE TABLE "Account" (
     "scope" TEXT,
     "id_token" TEXT,
     "session_state" TEXT,
-
-    CONSTRAINT "Account_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "accounts_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
-CREATE TABLE "Session" (
+-- CreateTable (NextAuth adapter)
+CREATE TABLE "sessions" (
     "id" TEXT NOT NULL,
     "sessionToken" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "expires" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "Session_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "sessions_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
-CREATE TABLE "VerificationToken" (
+-- CreateTable (NextAuth adapter)
+CREATE TABLE "verification_tokens" (
     "identifier" TEXT NOT NULL,
     "token" TEXT NOT NULL,
     "expires" TIMESTAMP(3) NOT NULL
 );
 
 -- CreateTable
-CREATE TABLE "User" (
+CREATE TABLE "users" (
     "id" TEXT NOT NULL,
-    "name" TEXT,
-    "email" TEXT,
-    "emailVerified" TIMESTAMP(3),
-    "image" TEXT,
-    "passwordHash" TEXT,
-    "plan" "Plan" NOT NULL DEFAULT 'FREE',
-    "stripeCustomerId" TEXT,
-    "stripeSubId" TEXT,
-    "trialEndsAt" TIMESTAMP(3),
-    "billingCycleStart" TIMESTAMP(3),
+    "email" TEXT NOT NULL,
+    "fullName" TEXT,
     "businessName" TEXT,
-    "address" TEXT,
-    "vatNumber" TEXT,
-    "currency" TEXT NOT NULL DEFAULT 'USD',
+    "businessAddress" TEXT,
+    "businessPhone" TEXT,
     "logoUrl" TEXT,
+    "currency" TEXT NOT NULL DEFAULT 'USD',
+    "locale" TEXT NOT NULL DEFAULT 'en-US',
+    "stripeCustomerId" TEXT,
+    "plan" "Plan" NOT NULL DEFAULT 'FREE',
+    "planExpiresAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "Client" (
+CREATE TABLE "clients" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -72,104 +71,120 @@ CREATE TABLE "Client" (
     "company" TEXT,
     "address" TEXT,
     "phone" TEXT,
+    "currency" TEXT,
     "notes" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "Client_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "clients_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "Invoice" (
+CREATE TABLE "invoices" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "clientId" TEXT NOT NULL,
-    "number" TEXT NOT NULL,
+    "invoiceNumber" TEXT NOT NULL,
     "status" "InvoiceStatus" NOT NULL DEFAULT 'DRAFT',
+    "currency" TEXT NOT NULL DEFAULT 'USD',
     "issueDate" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "dueDate" TIMESTAMP(3) NOT NULL,
-    "currency" TEXT NOT NULL DEFAULT 'USD',
-    "taxRate" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "notes" TEXT,
-    "terms" TEXT,
+    "footer" TEXT,
+    "subtotal" INTEGER NOT NULL,
+    "taxRate" DECIMAL(5,2),
+    "taxAmount" INTEGER NOT NULL DEFAULT 0,
+    "discountAmount" INTEGER NOT NULL DEFAULT 0,
+    "total" INTEGER NOT NULL,
+    "pdfUrl" TEXT,
     "stripePaymentLinkId" TEXT,
-    "stripePaymentLinkUrl" TEXT,
-    "stripePriceId" TEXT,
+    "stripePaymentIntentId" TEXT,
     "paidAt" TIMESTAMP(3),
-    "paidAmount" DOUBLE PRECISION,
     "sentAt" TIMESTAMP(3),
     "viewedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "Invoice_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "invoices_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "LineItem" (
+CREATE TABLE "line_items" (
     "id" TEXT NOT NULL,
     "invoiceId" TEXT NOT NULL,
     "description" TEXT NOT NULL,
-    "quantity" DOUBLE PRECISION NOT NULL,
-    "unitPrice" DOUBLE PRECISION NOT NULL,
-    "amount" DOUBLE PRECISION NOT NULL,
+    "quantity" DECIMAL(10,2) NOT NULL,
+    "unitPrice" INTEGER NOT NULL,
+    "amount" INTEGER NOT NULL,
+    "sortOrder" INTEGER NOT NULL DEFAULT 0,
+    CONSTRAINT "line_items_pkey" PRIMARY KEY ("id")
+);
 
-    CONSTRAINT "LineItem_pkey" PRIMARY KEY ("id")
+-- CreateTable
+CREATE TABLE "payments" (
+    "id" TEXT NOT NULL,
+    "invoiceId" TEXT NOT NULL,
+    "stripePaymentIntentId" TEXT NOT NULL,
+    "amount" INTEGER NOT NULL,
+    "currency" TEXT NOT NULL,
+    "status" "PaymentStatus" NOT NULL,
+    "paidAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "payments_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "subscriptions" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "stripeSubscriptionId" TEXT NOT NULL,
+    "stripePriceId" TEXT NOT NULL,
+    "plan" "Plan" NOT NULL,
+    "status" "SubscriptionStatus" NOT NULL,
+    "currentPeriodStart" TIMESTAMP(3) NOT NULL,
+    "currentPeriodEnd" TIMESTAMP(3) NOT NULL,
+    "cancelAtPeriodEnd" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    CONSTRAINT "subscriptions_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "invoice_activities" (
+    "id" TEXT NOT NULL,
+    "invoiceId" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
+    "metadata" JSONB,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "invoice_activities_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Account_provider_providerAccountId_key" ON "Account"("provider", "providerAccountId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Session_sessionToken_key" ON "Session"("sessionToken");
-
--- CreateIndex
-CREATE UNIQUE INDEX "VerificationToken_token_key" ON "VerificationToken"("token");
-
--- CreateIndex
-CREATE UNIQUE INDEX "VerificationToken_identifier_token_key" ON "VerificationToken"("identifier", "token");
-
--- CreateIndex
-CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
-
--- CreateIndex
-CREATE UNIQUE INDEX "User_stripeCustomerId_key" ON "User"("stripeCustomerId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "User_stripeSubId_key" ON "User"("stripeSubId");
-
--- CreateIndex
-CREATE INDEX "Client_userId_idx" ON "Client"("userId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Invoice_userId_number_key" ON "Invoice"("userId", "number");
-
--- CreateIndex
-CREATE INDEX "Invoice_userId_idx" ON "Invoice"("userId");
-
--- CreateIndex
-CREATE INDEX "Invoice_clientId_idx" ON "Invoice"("clientId");
-
--- CreateIndex
-CREATE INDEX "Invoice_status_idx" ON "Invoice"("status");
-
--- CreateIndex
-CREATE INDEX "LineItem_invoiceId_idx" ON "LineItem"("invoiceId");
+CREATE UNIQUE INDEX "accounts_provider_providerAccountId_key" ON "accounts"("provider", "providerAccountId");
+CREATE UNIQUE INDEX "sessions_sessionToken_key" ON "sessions"("sessionToken");
+CREATE UNIQUE INDEX "verification_tokens_token_key" ON "verification_tokens"("token");
+CREATE UNIQUE INDEX "verification_tokens_identifier_token_key" ON "verification_tokens"("identifier", "token");
+CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
+CREATE UNIQUE INDEX "users_stripeCustomerId_key" ON "users"("stripeCustomerId");
+CREATE INDEX "clients_userId_idx" ON "clients"("userId");
+CREATE INDEX "clients_userId_email_idx" ON "clients"("userId", "email");
+CREATE UNIQUE INDEX "invoices_userId_invoiceNumber_key" ON "invoices"("userId", "invoiceNumber");
+CREATE INDEX "invoices_userId_idx" ON "invoices"("userId");
+CREATE INDEX "invoices_userId_status_idx" ON "invoices"("userId", "status");
+CREATE INDEX "invoices_clientId_idx" ON "invoices"("clientId");
+CREATE INDEX "invoices_stripePaymentIntentId_idx" ON "invoices"("stripePaymentIntentId");
+CREATE INDEX "line_items_invoiceId_idx" ON "line_items"("invoiceId");
+CREATE UNIQUE INDEX "payments_stripePaymentIntentId_key" ON "payments"("stripePaymentIntentId");
+CREATE INDEX "payments_invoiceId_idx" ON "payments"("invoiceId");
+CREATE UNIQUE INDEX "subscriptions_stripeSubscriptionId_key" ON "subscriptions"("stripeSubscriptionId");
+CREATE INDEX "subscriptions_userId_idx" ON "subscriptions"("userId");
+CREATE INDEX "invoice_activities_invoiceId_idx" ON "invoice_activities"("invoiceId");
 
 -- AddForeignKey
-ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Client" ADD CONSTRAINT "Client_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Invoice" ADD CONSTRAINT "Invoice_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Invoice" ADD CONSTRAINT "Invoice_clientId_fkey" FOREIGN KEY ("clientId") REFERENCES "Client"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "LineItem" ADD CONSTRAINT "LineItem_invoiceId_fkey" FOREIGN KEY ("invoiceId") REFERENCES "Invoice"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "accounts" ADD CONSTRAINT "accounts_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "sessions" ADD CONSTRAINT "sessions_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "clients" ADD CONSTRAINT "clients_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "invoices" ADD CONSTRAINT "invoices_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "invoices" ADD CONSTRAINT "invoices_clientId_fkey" FOREIGN KEY ("clientId") REFERENCES "clients"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "line_items" ADD CONSTRAINT "line_items_invoiceId_fkey" FOREIGN KEY ("invoiceId") REFERENCES "invoices"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "payments" ADD CONSTRAINT "payments_invoiceId_fkey" FOREIGN KEY ("invoiceId") REFERENCES "invoices"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "subscriptions" ADD CONSTRAINT "subscriptions_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "invoice_activities" ADD CONSTRAINT "invoice_activities_invoiceId_fkey" FOREIGN KEY ("invoiceId") REFERENCES "invoices"("id") ON DELETE CASCADE ON UPDATE CASCADE;
