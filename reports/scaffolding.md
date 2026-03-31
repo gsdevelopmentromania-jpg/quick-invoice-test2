@@ -80,6 +80,15 @@ npm run test:ci          # Jest (CI mode)
 - `InvoiceStatus`: `DRAFT` → `SENT` → `VIEWED` → `PAID` / `OVERDUE` / `CANCELLED`
 - `Plan`: `FREE` | `PRO` | `TEAM`
 
+### Initial Migration (`prisma/migrations/20260101000000_init/migration.sql`)
+
+Full DDL for all tables, indexes, and foreign keys. Applied via:
+
+```bash
+npm run db:migrate:deploy   # Production / CI
+npm run db:migrate          # Development (with prompts)
+```
+
 ### Seed Data (`prisma/seed.ts`)
 
 Creates:
@@ -156,7 +165,7 @@ POST /api/invoices/[id]/send
   → Create Stripe Price (unit_amount in cents)
   → Create Stripe PaymentLink (with invoiceId metadata)
   → Update invoice: status=SENT, sentAt, stripePaymentLinkUrl
-  → [TODO] Send email via Resend/Nodemailer
+  → Send email via src/lib/email.ts (sendInvoiceEmail)
 ```
 
 ### Stripe Webhook Flow
@@ -171,7 +180,32 @@ POST /api/webhooks/stripe
 
 ---
 
-## 5. PDF Generation (`src/lib/pdf/invoice-pdf.tsx`)
+## 5. Email (`src/lib/email.ts`)
+
+Pluggable email utility using Nodemailer (SMTP):
+
+```typescript
+import { sendInvoiceEmail, sendPasswordResetEmail } from "@/lib/email";
+
+// Send invoice to client with optional Stripe payment button
+await sendInvoiceEmail({
+  invoice,               // InvoiceWithClient (includes lineItems + client)
+  paymentUrl,            // Stripe Payment Link URL (optional)
+  senderName: "Alex",
+  senderEmail: "alex@example.com",
+});
+
+// Send password reset link
+await sendPasswordResetEmail({ to: "user@example.com", resetUrl });
+```
+
+**To swap to Resend:** Replace the `nodemailer.createTransport()` call with `new Resend(process.env.RESEND_API_KEY)` and update `sendMail` → `emails.send`.
+
+Required env vars: `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM`
+
+---
+
+## 6. PDF Generation (`src/lib/pdf/invoice-pdf.tsx`)
 
 React component using `@react-pdf/renderer`:
 - Business name/address header
@@ -183,7 +217,24 @@ React component using `@react-pdf/renderer`:
 
 ---
 
-## 6. Environment Variables (`.env.example`)
+## 7. Testing (`jest.config.js`, `jest.setup.js`)
+
+| File | Purpose |
+|---|---|
+| `jest.config.js` | Jest config using `next/jest` (SWC transform, no ts-jest needed) |
+| `jest.setup.js` | Stubs env vars (NEXTAUTH_SECRET, DATABASE_URL, STRIPE_SECRET_KEY) |
+
+```bash
+npm run test         # Run all tests
+npm run test:watch   # Watch mode
+npm run test:ci      # CI mode (no watch, fail on missing tests OK)
+```
+
+Tests go in `src/**/__tests__/*.test.ts`. Coverage threshold: 50% across all metrics.
+
+---
+
+## 8. Environment Variables (`.env.example`)
 
 ```bash
 # App
@@ -221,18 +272,22 @@ STORAGE_ACCESS_KEY_ID=
 
 ---
 
-## 7. CI/CD Pipeline (`github-workflows/`)
+## 9. CI/CD Pipeline
 
-> **Note:** Files saved to `github-workflows/` — rename to `.github/workflows/` when setting up the repository (GitHub API restricts `.github/` creation on some branches).
+> **Note:** GitHub API restricts writing to `.github/workflows/` on non-default branches. Workflows are stored in `github-workflows/` and must be **moved** to `.github/workflows/` after merging to `main`.
+>
+> ```bash
+> cp -r github-workflows/ .github/workflows/
+> ```
 
-### `ci.yml` — Runs on every push/PR
+### `github-workflows/ci.yml` — Runs on every push/PR
 
 **Jobs:**
 1. **lint-and-type-check** — `tsc --noEmit` + ESLint + Prettier check
 2. **test** — Spins up PostgreSQL 16 service, runs migrations, runs Jest
 3. **build** — `next build` (requires lint to pass)
 
-### `deploy.yml` — Runs on `main` branch push
+### `github-workflows/deploy.yml` — Runs on `main` branch push
 
 **Steps:**
 1. Install + generate Prisma
@@ -249,7 +304,7 @@ VERCEL_PROJECT_ID     Vercel project ID
 
 ---
 
-## 8. Docker Setup
+## 10. Docker Setup
 
 ### `Dockerfile` — Multi-stage production build
 
@@ -280,9 +335,9 @@ docker-compose --profile stripe up -d
 
 | Priority | Action |
 |---|---|
-| 🔴 High | Add `next.config.mjs` `output: "standalone"` for Docker |
-| 🔴 High | Implement email sending in `src/lib/email.ts` (Resend integration) |
+| 🔴 High | Move `github-workflows/` → `.github/workflows/` after merging to main |
 | 🔴 High | Add Tailwind CSS config and install `tailwindcss` dependency |
+| 🔴 High | Add `output: "standalone"` to `next.config.mjs` for Docker |
 | 🟡 Medium | Build dashboard UI (`/dashboard`, `/invoices`, `/clients` pages) |
 | 🟡 Medium | Add invoice number auto-increment as a DB sequence |
 | 🟡 Medium | Write API integration tests |
@@ -301,15 +356,21 @@ quick-invoice/
 ├── .prettierrc
 ├── Dockerfile
 ├── docker-compose.yml
+├── jest.config.js                ← NEW: Jest config (next/jest SWC transform)
+├── jest.setup.js                 ← NEW: env stubs for tests
 ├── next.config.mjs
 ├── package.json
 ├── tsconfig.json
-├── github-workflows/        ← rename to .github/workflows/
+├── github-workflows/             ← rename to .github/workflows/ post-merge
 │   ├── ci.yml
 │   └── deploy.yml
 ├── prisma/
 │   ├── schema.prisma
-│   └── seed.ts
+│   ├── seed.ts
+│   └── migrations/
+│       ├── migration_lock.toml   ← NEW
+│       └── 20260101000000_init/
+│           └── migration.sql     ← NEW: full DDL for all tables
 └── src/
     ├── app/
     │   ├── layout.tsx
@@ -334,6 +395,7 @@ quick-invoice/
     │           └── stripe/route.ts
     ├── lib/
     │   ├── auth.ts
+    │   ├── email.ts              ← NEW: Nodemailer/Resend utility
     │   ├── prisma.ts
     │   ├── stripe.ts
     │   └── pdf/
