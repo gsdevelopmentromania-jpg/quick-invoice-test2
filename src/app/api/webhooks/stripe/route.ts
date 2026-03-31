@@ -5,7 +5,7 @@ import prisma from "@/lib/prisma";
 
 /**
  * POST /api/webhooks/stripe
- * Handles Stripe webhook events (payment completed, subscription updates).
+ * Handles Stripe webhook events.
  */
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const body = await req.text();
@@ -31,55 +31,156 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   switch (event.type) {
-    case "checkout.session.completed": {
-      const session = event.data.object as Stripe.Checkout.Session;
-      const invoiceId = session.metadata?.invoiceId;
+    case "payment_intent.succeeded": {
+      const intent = event.data.object as Stripe.PaymentIntent;
+      const invoiceId = intent.metadata?.invoiceId;
 
       if (invoiceId) {
-        await prisma.invoice.update({
-          where: { id: invoiceId },
-          data: {
-            status: "PAID",
-            paidAt: new Date(),
-            paidAmount: session.amount_total ? session.amount_total / 100 : null,
-          },
+        await prisma.$transaction(async (tx) => {
+          const inv = await tx.invoice.update({
+            where: { id: invoiceId },
+            data: {
+              status: "PAID",
+              paidAt: new Date(),
+              stripePaymentIntentId: intent.id,
+            },
+          });
+
+          await tx.payment.create({
+            data: {
+              invoiceId,
+              stripePaymentIntentId: intent.id,
+              amount: intent.amount_received,
+              currency: intent.currency,
+              status: "SUCCEEDED",
+              paidAt: new Date(),
+            },
+          });
+
+          await tx.invoiceActivity.create({
+            data: { invoiceId: inv.id, type: "PAID", metadata: { intentId: intent.id } },
+          });
         });
       }
       break;
     }
 
-    case "payment_link.created": {
-      // No-op; tracked at creation time
+    case "checkout.session.completed": {
+      const session = event.data.object as Stripe.Checkout.Session;
+      const invoiceId = session.metadata?.invoiceId;
+      const paymentIntentId =
+        typeof session.payment_intent === "string" ? session.payment_intent : null;
+
+      if (invoiceId) {
+        await prisma.$transaction(async (tx) => {
+          await tx.invoice.update({
+            where: { id: invoiceId },
+            data: {
+              status: "PAID",
+              paidAt: new Date(),
+              ...(paymentIntentId ? { stripePaymentIntentId: paymentIntentId } : {}),
+            },
+          });
+
+          if (paymentIntentId && session.amount_total) {
+            await tx.payment.create({
+              data: {
+                invoiceId,
+                stripePaymentIntentId: paymentIntentId,
+                amount: session.amount_total,
+                currency: session.currency ?? "usd",
+                status: "SUCCEEDED",
+                paidAt: new Date(),
+              },
+            });
+          }
+
+          await tx.invoiceActivity.create({
+            data: { invoiceId, type: "PAID" },
+          });
+        });
+      }
+      break;
+    }
+
+    case "customer.subscription.created":
+    case "customer.subscription.updated": {
+      const sub = event.data.object as Stripe.Subscription;
+      const customerId = typeof sub.customer === "string" ? sub.customer : null;
+
+      if (customerId) {
+        const priceId = sub.items.data[0]?.price?.id;
+        const plan =
+          priceId === process.env.STRIPE_TEAM_PRICE_ID
+            ? "TEAM"
+            : priceId === process.env.STRIPE_PRO_PRICE_ID
+            ? "PRO"
+            : "FREE";
+
+        await prisma.$transaction(async (tx) => {
+          const user = await tx.user.findFirst({
+            where: { stripeCustomerId: customerId },
+          });
+
+          if (!user) return;
+
+          await tx.user.update({
+            where: { id: user.id },
+            data: { plan },
+          });
+
+          await tx.subscription.upsert({
+            where: { stripeSubscriptionId: sub.id },
+            update: {
+              status: sub.status.toUpperCase() as Parameters<
+                typeof tx.subscription.update
+              >[0]["data"]["status"],
+              currentPeriodStart: new Date(sub.current_period_start * 1000),
+              currentPeriodEnd: new Date(sub.current_period_end * 1000),
+              cancelAtPeriodEnd: sub.cancel_at_period_end,
+            },
+            create: {
+              userId: user.id,
+              stripeSubscriptionId: sub.id,
+              stripePriceId: priceId ?? "",
+              plan,
+              status: sub.status.toUpperCase() as Parameters<
+                typeof tx.subscription.create
+              >[0]["data"]["status"],
+              currentPeriodStart: new Date(sub.current_period_start * 1000),
+              currentPeriodEnd: new Date(sub.current_period_end * 1000),
+              cancelAtPeriodEnd: sub.cancel_at_period_end,
+            },
+          });
+        });
+      }
       break;
     }
 
     case "customer.subscription.deleted": {
-      const subscription = event.data.object as Stripe.Subscription;
-      await prisma.user.updateMany({
-        where: { stripeSubId: subscription.id },
-        data: { plan: "FREE", stripeSubId: null },
+      const sub = event.data.object as Stripe.Subscription;
+
+      await prisma.$transaction(async (tx) => {
+        const subscription = await tx.subscription.findUnique({
+          where: { stripeSubscriptionId: sub.id },
+        });
+
+        if (!subscription) return;
+
+        await tx.subscription.update({
+          where: { stripeSubscriptionId: sub.id },
+          data: { status: "CANCELLED" },
+        });
+
+        await tx.user.update({
+          where: { id: subscription.userId },
+          data: { plan: "FREE" },
+        });
       });
       break;
     }
 
-    case "customer.subscription.updated": {
-      const subscription = event.data.object as Stripe.Subscription;
-      const priceId = subscription.items.data[0]?.price?.id;
-      const isPro =
-        priceId === process.env.STRIPE_PRO_PRICE_ID ||
-        priceId === process.env.STRIPE_TEAM_PRICE_ID;
-
-      if (isPro) {
-        await prisma.user.updateMany({
-          where: { stripeSubId: subscription.id },
-          data: { plan: subscription.metadata?.plan === "TEAM" ? "TEAM" : "PRO" },
-        });
-      }
-      break;
-    }
-
     default:
-      // Unhandled event type — not an error
       break;
   }
 
