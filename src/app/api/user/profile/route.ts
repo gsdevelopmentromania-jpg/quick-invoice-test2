@@ -16,7 +16,7 @@ const updateProfileSchema = z.object({
 });
 
 /**
- * GET /api/v1/profile
+ * GET /api/user/profile
  * Returns the current user's profile.
  */
 export async function GET(
@@ -39,7 +39,7 @@ export async function GET(
 }
 
 /**
- * PATCH /api/v1/profile
+ * PATCH /api/user/profile
  * Updates the current user's profile settings.
  */
 export async function PATCH(
@@ -62,4 +62,47 @@ export async function PATCH(
   });
 
   return NextResponse.json({ data: updated });
+}
+
+/**
+ * DELETE /api/user/profile
+ *
+ * GDPR-compliant account deletion.
+ * Permanently deletes the user and all associated data (cascades via Prisma).
+ * Requires the user to confirm with their email address.
+ */
+export async function DELETE(
+  req: NextRequest
+): Promise<NextResponse<ApiResponse<{ deleted: boolean }>>> {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const body: unknown = await req.json().catch(() => ({}));
+  const confirmation = z.object({ confirmEmail: z.string().email() }).safeParse(body);
+
+  if (!confirmation.success) {
+    return NextResponse.json(
+      { error: "Please provide your email address to confirm deletion" },
+      { status: 400 }
+    );
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  if (!user) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
+
+  if (confirmation.data.confirmEmail.toLowerCase() !== user.email.toLowerCase()) {
+    return NextResponse.json(
+      { error: "Email confirmation does not match" },
+      { status: 400 }
+    );
+  }
+
+  // Cascade deletes clients, invoices, subscriptions, accounts, sessions via Prisma onDelete: Cascade
+  await prisma.user.delete({ where: { id: session.user.id } });
+
+  return NextResponse.json({ data: { deleted: true } }, { status: 200 });
 }
