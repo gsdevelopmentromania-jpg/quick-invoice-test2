@@ -4,8 +4,6 @@ import { withSentryConfig } from "@sentry/nextjs";
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   pageExtensions: ["js", "jsx", "mdx", "ts", "tsx"],
-  // Moved from experimental.serverComponentsExternalPackages (deprecated in Next.js 14.2+)
-  serverExternalPackages: ["@prisma/client", "bcryptjs"],
   images: {
     remotePatterns: [
       {
@@ -19,6 +17,11 @@ const nextConfig = {
     ],
   },
   experimental: {
+    serverComponentsExternalPackages: [
+      "@prisma/client",
+      "bcryptjs",
+      "@react-pdf/renderer",
+    ],
     instrumentationHook: true,
   },
 };
