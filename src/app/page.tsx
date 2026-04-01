@@ -6,8 +6,6 @@ import { SolutionSection } from "@/components/landing/solution-section";
 import { FeaturesSection } from "@/components/landing/features-section";
 import { JsonLd } from "@/components/seo/json-ld";
 import type {
-  OrganizationJsonLd,
-  WebSiteJsonLd,
   SoftwareApplicationJsonLd,
   FaqJsonLd,
 } from "@/components/seo/json-ld";
@@ -22,24 +20,6 @@ export const metadata: Metadata = {
   alternates: {
     canonical: BASE_URL,
   },
-};
-
-const organizationSchema: OrganizationJsonLd = {
-  "@type": "Organization",
-  name: "Quick Invoice",
-  url: BASE_URL,
-  logo: `${BASE_URL}/logo.png`,
-  description:
-    "The fastest invoicing tool for freelancers. Create, send, and collect payment on professional invoices in under two minutes.",
-  sameAs: ["https://twitter.com/quickinvoice"],
-};
-
-const websiteSchema: WebSiteJsonLd = {
-  "@type": "WebSite",
-  name: "Quick Invoice",
-  url: BASE_URL,
-  description:
-    "Fast, professional invoicing for freelancers. Send invoices, accept Stripe payments, and download PDF receipts in minutes.",
 };
 
 const softwareSchema: SoftwareApplicationJsonLd = {
@@ -114,9 +94,7 @@ const faqSchema: FaqJsonLd = {
 export default function HomePage(): React.ReactElement {
   return (
     <>
-      <JsonLd
-        data={[organizationSchema, websiteSchema, softwareSchema, faqSchema]}
-      />
+      <JsonLd data={[softwareSchema, faqSchema]} />
       <LandingNav />
       <main>
         <HeroSection />
