@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardHeader, CardBody, CardFooter } from "@/components/ui/card";
+import { PLAN_CONFIGS } from "@/lib/billing";
+import type { SubscriptionDetails } from "@/app/api/billing/subscription/route";
 
 type Tab = "profile" | "notifications" | "billing";
 
@@ -73,7 +75,7 @@ function ProfileTab(): React.ReactElement {
 
       if (!res.ok) {
         const data = (await res.json()) as { error?: string };
-        throw new Error(data.error || "Failed to save profile.");
+        throw new Error(data.error ?? "Failed to save profile.");
       }
 
       setSaved(true);
@@ -108,12 +110,8 @@ function ProfileTab(): React.ReactElement {
         {/* Personal */}
         <Card>
           <CardHeader>
-            <h2 className="text-base font-semibold text-gray-900">
-              Personal Info
-            </h2>
-            <p className="mt-0.5 text-sm text-gray-500">
-              Your name and contact details.
-            </p>
+            <h2 className="text-base font-semibold text-gray-900">Personal Info</h2>
+            <p className="mt-0.5 text-sm text-gray-500">Your name and contact details.</p>
           </CardHeader>
           <CardBody className="space-y-4">
             <Input
@@ -130,12 +128,8 @@ function ProfileTab(): React.ReactElement {
         {/* Business */}
         <Card>
           <CardHeader>
-            <h2 className="text-base font-semibold text-gray-900">
-              Business Details
-            </h2>
-            <p className="mt-0.5 text-sm text-gray-500">
-              Appears on your invoices.
-            </p>
+            <h2 className="text-base font-semibold text-gray-900">Business Details</h2>
+            <p className="mt-0.5 text-sm text-gray-500">Appears on your invoices.</p>
           </CardHeader>
           <CardBody className="space-y-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -172,9 +166,7 @@ function ProfileTab(): React.ReactElement {
         {/* Preferences */}
         <Card>
           <CardHeader>
-            <h2 className="text-base font-semibold text-gray-900">
-              Preferences
-            </h2>
+            <h2 className="text-base font-semibold text-gray-900">Preferences</h2>
           </CardHeader>
           <CardBody className="space-y-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -196,13 +188,7 @@ function ProfileTab(): React.ReactElement {
           </CardBody>
           <CardFooter>
             <div className="flex justify-end">
-              <Button
-                type="submit"
-                variant="primary"
-                size="md"
-                loading={loading}
-                disabled={loading}
-              >
+              <Button type="submit" variant="primary" size="md" loading={loading} disabled={loading}>
                 Save Changes
               </Button>
             </div>
@@ -278,17 +264,13 @@ function NotificationsTab(): React.ReactElement {
   ]);
 
   function toggle(id: string, value: boolean): void {
-    setPrefs((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, enabled: value } : p))
-    );
+    setPrefs((prev) => prev.map((p) => (p.id === id ? { ...p, enabled: value } : p)));
   }
 
   return (
     <Card>
       <CardHeader>
-        <h2 className="text-base font-semibold text-gray-900">
-          Email Notifications
-        </h2>
+        <h2 className="text-base font-semibold text-gray-900">Email Notifications</h2>
         <p className="mt-0.5 text-sm text-gray-500">
           Choose which events trigger an email to you.
         </p>
@@ -301,11 +283,7 @@ function NotificationsTab(): React.ReactElement {
                 <p className="text-sm font-medium text-gray-900">{pref.label}</p>
                 <p className="mt-0.5 text-xs text-gray-500">{pref.description}</p>
               </div>
-              <Toggle
-                enabled={pref.enabled}
-                onChange={(v) => toggle(pref.id, v)}
-                label={pref.label}
-              />
+              <Toggle enabled={pref.enabled} onChange={(v) => toggle(pref.id, v)} label={pref.label} />
             </li>
           ))}
         </ul>
@@ -321,103 +299,379 @@ function NotificationsTab(): React.ReactElement {
   );
 }
 
+function UsageBar({
+  used,
+  limit,
+  label,
+}: {
+  used: number;
+  limit: number | null;
+  label: string;
+}): React.ReactElement {
+  const pct = limit === null ? 0 : Math.min(100, Math.round((used / limit) * 100));
+  const displayLimit = limit === null ? "∞" : String(limit);
+  const barColor = pct >= 90 ? "bg-red-500" : pct >= 70 ? "bg-yellow-400" : "bg-indigo-600";
+
+  return (
+    <div>
+      <div className="mb-1.5 flex justify-between text-xs text-gray-500">
+        <span>{label}</span>
+        <span>
+          {used} / {displayLimit}
+        </span>
+      </div>
+      {limit !== null && (
+        <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100">
+          <div
+            className={`h-full rounded-full ${barColor}`}
+            style={{ width: `${pct}%` }}
+            role="progressbar"
+            aria-valuenow={used}
+            aria-valuemin={0}
+            aria-valuemax={limit}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
 function BillingTab(): React.ReactElement {
+  const [sub, setSub] = useState<SubscriptionDetails | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+
+  const fetchSubscription = useCallback(async (): Promise<void> => {
+    try {
+      const res = await fetch("/api/billing/subscription");
+      const json = (await res.json()) as { data?: SubscriptionDetails; error?: string };
+      if (json.data) setSub(json.data);
+    } catch {
+      setError("Failed to load billing info.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void fetchSubscription();
+  }, [fetchSubscription]);
+
+  async function handleUpgrade(plan: "PRO" | "TEAM"): Promise<void> {
+    setActionLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/billing/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan, withTrial: true }),
+      });
+      const json = (await res.json()) as { data?: { url: string }; error?: string };
+      if (json.data?.url) {
+        window.location.href = json.data.url;
+      } else {
+        throw new Error(json.error ?? "Failed to start checkout.");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong.");
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  async function handleManageBilling(): Promise<void> {
+    setActionLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/billing/portal", { method: "POST" });
+      const json = (await res.json()) as { data?: { url: string }; error?: string };
+      if (json.data?.url) {
+        window.location.href = json.data.url;
+      } else {
+        throw new Error(json.error ?? "Failed to open billing portal.");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong.");
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  async function handleCancel(): Promise<void> {
+    if (!confirm("Are you sure you want to cancel your subscription?")) return;
+    setActionLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/billing/cancel", { method: "POST" });
+      const json = (await res.json()) as { data?: { message: string }; error?: string };
+      if (json.data?.message) {
+        setMessage(json.data.message);
+        await fetchSubscription();
+      } else {
+        throw new Error(json.error ?? "Failed to cancel subscription.");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong.");
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  async function handleReactivate(): Promise<void> {
+    setActionLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/billing/reactivate", { method: "POST" });
+      const json = (await res.json()) as { data?: { message: string }; error?: string };
+      if (json.data?.message) {
+        setMessage(json.data.message);
+        await fetchSubscription();
+      } else {
+        throw new Error(json.error ?? "Failed to reactivate subscription.");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong.");
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        {[1, 2].map((i) => (
+          <div key={i} className="h-40 animate-pulse rounded-xl bg-gray-100" />
+        ))}
+      </div>
+    );
+  }
+
+  const planConfig = sub ? PLAN_CONFIGS[sub.plan] : PLAN_CONFIGS["FREE"];
+  const proConfig = PLAN_CONFIGS["PRO"];
+  const isFreePlan = !sub || sub.plan === "FREE";
+  const isTrialing = sub?.status === "TRIALING";
+  const isPastDue = sub?.status === "PAST_DUE";
+  const isCancelScheduled = sub?.cancelAtPeriodEnd === true;
+
+  const trialEndDate = sub?.trialEnd
+    ? new Date(sub.trialEnd).toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      })
+    : null;
+
+  const periodEndDate = sub?.currentPeriodEnd
+    ? new Date(sub.currentPeriodEnd).toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      })
+    : null;
+
   return (
     <div className="space-y-5">
+      {error && (
+        <div
+          role="alert"
+          className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+        >
+          {error}
+        </div>
+      )}
+      {message && (
+        <div
+          role="status"
+          className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700"
+        >
+          {message}
+        </div>
+      )}
+      {isPastDue && (
+        <div
+          role="alert"
+          className="rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-800"
+        >
+          ⚠️ Your last payment failed. Please update your payment method to avoid service
+          interruption.{" "}
+          <button
+            onClick={() => void handleManageBilling()}
+            className="font-medium underline hover:no-underline"
+          >
+            Update payment method
+          </button>
+        </div>
+      )}
+      {isCancelScheduled && periodEndDate && (
+        <div
+          role="status"
+          className="rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-800"
+        >
+          Your subscription will cancel on <strong>{periodEndDate}</strong>. You&apos;ll retain
+          access until then.{" "}
+          <button
+            onClick={() => void handleReactivate()}
+            disabled={actionLoading}
+            className="font-medium underline hover:no-underline disabled:opacity-50"
+          >
+            Reactivate
+          </button>
+        </div>
+      )}
+
       {/* Current plan */}
       <Card>
         <CardHeader>
-          <h2 className="text-base font-semibold text-gray-900">
-            Current Plan
-          </h2>
+          <h2 className="text-base font-semibold text-gray-900">Current Plan</h2>
         </CardHeader>
         <CardBody>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xl font-bold text-gray-900">Free</span>
-                <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
-                  Current
-                </span>
+                <span className="text-xl font-bold text-gray-900">{planConfig.name}</span>
+                {isTrialing && (
+                  <span className="rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-medium text-indigo-700">
+                    Trial
+                  </span>
+                )}
+                {!isFreePlan && !isTrialing && (
+                  <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700">
+                    Active
+                  </span>
+                )}
+                {isFreePlan && (
+                  <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
+                    Free
+                  </span>
+                )}
               </div>
-              <p className="mt-1 text-sm text-gray-500">
-                Up to 3 active invoices per month. No payment required.
-              </p>
+              {isTrialing && trialEndDate && (
+                <p className="mt-1 text-sm text-gray-500">
+                  Trial ends <strong>{trialEndDate}</strong>. Add a payment method to continue.
+                </p>
+              )}
+              {!isFreePlan && !isTrialing && periodEndDate && (
+                <p className="mt-1 text-sm text-gray-500">
+                  {isCancelScheduled ? "Cancels" : "Renews"} on <strong>{periodEndDate}</strong>.
+                </p>
+              )}
+              {isFreePlan && (
+                <p className="mt-1 text-sm text-gray-500">
+                  Up to 3 invoices / month, 5 clients.
+                </p>
+              )}
             </div>
-            <Button variant="primary" size="md">
-              Upgrade to Pro
-            </Button>
+
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              {isFreePlan && (
+                <Button
+                  variant="primary"
+                  size="md"
+                  loading={actionLoading}
+                  onClick={() => void handleUpgrade("PRO")}
+                >
+                  Upgrade to Pro
+                </Button>
+              )}
+              {!isFreePlan && sub?.hasStripeCustomer && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="md"
+                    loading={actionLoading}
+                    onClick={() => void handleManageBilling()}
+                  >
+                    Manage billing
+                  </Button>
+                  {!isCancelScheduled && (
+                    <Button
+                      variant="ghost"
+                      size="md"
+                      loading={actionLoading}
+                      onClick={() => void handleCancel()}
+                      className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                    >
+                      Cancel plan
+                    </Button>
+                  )}
+                </>
+              )}
+            </div>
           </div>
 
-          {/* Usage bar */}
-          <div className="mt-5">
-            <div className="mb-1.5 flex justify-between text-xs text-gray-500">
-              <span>Invoices this month</span>
-              <span>3 / 3 used</span>
-            </div>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100">
-              <div
-                className="h-full rounded-full bg-indigo-600"
-                style={{ width: "100%" }}
-                role="progressbar"
-                aria-valuenow={3}
-                aria-valuemin={0}
-                aria-valuemax={3}
+          {/* Usage bars */}
+          {sub && (
+            <div className="mt-6 space-y-4 rounded-lg border border-gray-100 bg-gray-50 p-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-gray-400">
+                Usage this month
+              </p>
+              <UsageBar
+                used={sub.usage.invoicesThisMonth}
+                limit={sub.usage.invoicesLimit}
+                label="Invoices"
+              />
+              <UsageBar
+                used={sub.usage.totalClients}
+                limit={sub.usage.clientsLimit}
+                label="Clients"
               />
             </div>
-          </div>
+          )}
         </CardBody>
       </Card>
 
-      {/* Pro plan card */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold text-gray-900">Pro Plan</h2>
-            <span className="rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-medium text-indigo-700">
-              Recommended
-            </span>
-          </div>
-        </CardHeader>
-        <CardBody className="space-y-3">
-          <p className="text-2xl font-bold text-gray-900">
-            $12{" "}
-            <span className="text-base font-normal text-gray-500">/ month</span>
-          </p>
-          <ul className="space-y-2 text-sm text-gray-600">
-            {[
-              "Unlimited invoices",
-              "PDF downloads",
-              "Automated payment reminders",
-              "Custom branding & logo",
-              "Priority support",
-            ].map((feature) => (
-              <li key={feature} className="flex items-center gap-2">
-                <svg
-                  className="h-4 w-4 flex-shrink-0 text-green-500"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={2.5}
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-                {feature}
-              </li>
-            ))}
-          </ul>
-        </CardBody>
-        <CardFooter>
-          <Button variant="primary" size="md" className="w-full">
-            Upgrade to Pro — $12/mo
-          </Button>
-        </CardFooter>
-      </Card>
+      {/* Upgrade card — only show for free plan */}
+      {isFreePlan && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-semibold text-gray-900">Pro Plan</h2>
+              <span className="rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-medium text-indigo-700">
+                Recommended
+              </span>
+            </div>
+          </CardHeader>
+          <CardBody className="space-y-3">
+            <p className="text-2xl font-bold text-gray-900">
+              ${proConfig.monthlyPriceUsd}{" "}
+              <span className="text-base font-normal text-gray-500">/ month</span>
+            </p>
+            <ul className="space-y-2 text-sm text-gray-600">
+              {proConfig.highlights.map((feature) => (
+                <li key={feature} className="flex items-center gap-2">
+                  <svg
+                    className="h-4 w-4 flex-shrink-0 text-green-500"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2.5}
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  {feature}
+                </li>
+              ))}
+            </ul>
+          </CardBody>
+          <CardFooter>
+            <div className="space-y-2">
+              <Button
+                variant="primary"
+                size="md"
+                className="w-full"
+                loading={actionLoading}
+                onClick={() => void handleUpgrade("PRO")}
+              >
+                Start 14-day free trial — ${proConfig.monthlyPriceUsd}/mo after
+              </Button>
+              <p className="text-center text-xs text-gray-400">No credit card required</p>
+            </div>
+          </CardFooter>
+        </Card>
+      )}
     </div>
   );
 }
