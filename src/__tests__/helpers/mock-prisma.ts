@@ -32,7 +32,16 @@ const prismaMock = {
   },
   user: {
     findUnique: jest.fn(),
+    create: jest.fn(),
     update: jest.fn(),
+    delete: jest.fn(),
+    updateMany: jest.fn(),
+  },
+  passwordResetToken: {
+    findUnique: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    updateMany: jest.fn(),
   },
   $transaction: jest.fn().mockImplementation(
     (arg: ((tx: typeof prismaMock) => Promise<unknown>) | Array<Promise<unknown>>) => {
@@ -64,7 +73,14 @@ export function resetPrismaMock() {
   prismaMock.invoice.delete.mockReset();
   prismaMock.invoiceActivity.create.mockReset();
   prismaMock.user.findUnique.mockReset();
+  prismaMock.user.create.mockReset();
   prismaMock.user.update.mockReset();
+  prismaMock.user.delete.mockReset();
+  prismaMock.user.updateMany.mockReset();
+  prismaMock.passwordResetToken.findUnique.mockReset();
+  prismaMock.passwordResetToken.create.mockReset();
+  prismaMock.passwordResetToken.update.mockReset();
+  prismaMock.passwordResetToken.updateMany.mockReset();
   prismaMock.$transaction.mockReset();
   prismaMock.$transaction.mockImplementation(
     (arg: ((tx: typeof prismaMock) => Promise<unknown>) | Array<Promise<unknown>>) => {
