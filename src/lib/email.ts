@@ -35,6 +35,12 @@ export interface SendPasswordResetEmailOptions {
   resetUrl: string;
 }
 
+export interface SendEmailVerificationOptions {
+  to: string;
+  verificationUrl: string;
+  name?: string;
+}
+
 // ─────────────────────────────────────────
 // Helpers
 // ─────────────────────────────────────────
@@ -125,7 +131,43 @@ export async function sendPasswordResetEmail(opts: SendPasswordResetEmailOptions
           <h2>Password Reset</h2>
           <p>Click the button below to reset your password. This link expires in 1 hour.</p>
           <p><a href="${resetUrl}" style="background:#6366f1;color:#fff;padding:12px 24px;text-decoration:none;border-radius:6px;">Reset Password</a></p>
-          <p style="color:#6b7280;font-size:12px">If you didn't request this, you can safely ignore this email.</p>
+          <p style="color:#6b7280;font-size:12px">If you didn&apos;t request this, you can safely ignore this email.</p>
+        </body>
+      </html>
+    `,
+  });
+}
+
+// ─────────────────────────────────────────
+// Email verification
+// ─────────────────────────────────────────
+
+export async function sendEmailVerificationEmail(
+  opts: SendEmailVerificationOptions
+): Promise<void> {
+  const { to, verificationUrl, name } = opts;
+
+  const greeting = name ? `Hi ${name},` : "Hi there,";
+
+  const transporter = createTransport();
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_FROM ?? "noreply@quickinvoice.app",
+    to,
+    subject: "Verify your Quick Invoice email address",
+    html: `
+      <html>
+        <body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px">
+          <h2>Verify your email</h2>
+          <p>${greeting}</p>
+          <p>Thanks for signing up for Quick Invoice. Please verify your email address to get started.</p>
+          <p>
+            <a href="${verificationUrl}"
+               style="background:#6366f1;color:#fff;padding:12px 24px;text-decoration:none;border-radius:6px;">
+              Verify Email
+            </a>
+          </p>
+          <p style="color:#6b7280;font-size:12px">This link expires in 24 hours. If you didn&apos;t sign up, you can safely ignore this email.</p>
         </body>
       </html>
     `,
