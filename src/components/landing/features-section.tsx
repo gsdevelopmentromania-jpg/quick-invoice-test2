@@ -69,17 +69,17 @@ const features = [
 
 export function FeaturesSection(): React.ReactElement {
   return (
-    <section id="features" className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
+    <section id="features" className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-950">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-14">
           <p className="text-sm font-semibold uppercase tracking-widest text-indigo-600 mb-3">
             Everything you need
           </p>
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
             Packed with features freelancers actually use
           </h2>
-          <p className="text-lg text-gray-500 max-w-2xl mx-auto">
+          <p className="text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">
             No bloat. No enterprise complexity. Just the tools that get you from &ldquo;work done&rdquo; to &ldquo;payment received.&rdquo;
           </p>
         </div>
@@ -89,13 +89,13 @@ export function FeaturesSection(): React.ReactElement {
           {features.map((feature) => (
             <div
               key={feature.id}
-              className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm hover:shadow-md hover:border-indigo-200 transition-all duration-200 group"
+              className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm hover:shadow-md hover:border-indigo-200 dark:hover:border-indigo-700 transition-all duration-200 group"
             >
-              <div className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-indigo-50 text-indigo-600 mb-4 group-hover:bg-indigo-100 transition-colors">
+              <div className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-indigo-50 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 mb-4 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900 transition-colors">
                 {feature.icon}
               </div>
-              <h3 className="text-base font-semibold text-gray-900 mb-2">{feature.title}</h3>
-              <p className="text-sm text-gray-500 leading-relaxed">{feature.description}</p>
+              <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-2">{feature.title}</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{feature.description}</p>
             </div>
           ))}
         </div>
