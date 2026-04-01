@@ -1,64 +1,57 @@
 import type { Metadata } from "next";
-import { Skeleton, SkeletonText } from "@/components/ui/skeleton";
+import { Card, CardHeader, CardBody } from "@/components/ui/card";
 
 export const metadata: Metadata = {
   title: "Settings",
 };
 
-const TABS = ["Profile", "Business", "Billing", "Notifications", "Integrations"];
+const SETTINGS_TABS = [
+  { id: "profile", label: "Profile" },
+  { id: "billing", label: "Billing" },
+  { id: "notifications", label: "Notifications" },
+];
 
 export default function SettingsPage(): React.ReactElement {
   return (
-    <div className="p-6 space-y-5">
-      {/* Page header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-        <p className="mt-0.5 text-sm text-gray-500">Manage your account and business preferences.</p>
+    <div className="p-6 max-w-2xl mx-auto">
+      {/* Page heading */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-semibold text-gray-900">Settings</h1>
+        <p className="mt-1 text-sm text-gray-500">
+          Manage your account, billing, and preferences.
+        </p>
       </div>
 
-      {/* Tab bar placeholder */}
-      <div className="flex gap-1 overflow-x-auto border-b border-gray-200 pb-0">
-        {TABS.map((tab, i) => (
-          <button
-            key={tab}
-            className={[
-              "flex-shrink-0 border-b-2 px-4 py-2 text-sm font-medium transition-colors",
-              i === 0
-                ? "border-indigo-600 text-indigo-600"
-                : "border-transparent text-gray-500 hover:text-gray-700",
-            ].join(" ")}
+      {/* Tab nav (visual stub — no JS state needed for shell) */}
+      <div className="mb-6 flex gap-1 rounded-lg border border-gray-200 bg-gray-50 p-1 w-fit">
+        {SETTINGS_TABS.map((tab, index) => (
+          <span
+            key={tab.id}
+            className={
+              index === 0
+                ? "rounded-md bg-white px-4 py-1.5 text-sm font-medium text-gray-900 shadow-sm"
+                : "px-4 py-1.5 text-sm font-medium text-gray-500"
+            }
           >
-            {tab}
-          </button>
+            {tab.label}
+          </span>
         ))}
       </div>
 
-      {/* Panel placeholder — will be replaced with real settings in feature task */}
-      <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-5 max-w-xl">
-        <div className="space-y-1">
-          <p className="text-sm font-semibold text-gray-700">Profile</p>
-          <p className="text-xs text-gray-400">Your personal and business information.</p>
-        </div>
-
-        <div className="space-y-4 pt-2 border-t border-gray-100">
-          {[
-            "Full name",
-            "Email address",
-            "Business name",
-            "Business address",
-            "Phone number",
-          ].map((label) => (
-            <div key={label} className="space-y-1">
-              <SkeletonText className="w-28 h-3" />
-              <Skeleton className="h-9 w-full" />
-            </div>
-          ))}
-
-          <div className="pt-2 flex justify-end gap-3">
-            <Skeleton className="h-9 w-24" />
-          </div>
-        </div>
-      </div>
+      {/* Profile section placeholder */}
+      <Card>
+        <CardHeader>
+          <h2 className="text-base font-semibold text-gray-900">Profile</h2>
+          <p className="mt-0.5 text-sm text-gray-500">
+            Your name, business info, and logo.
+          </p>
+        </CardHeader>
+        <CardBody>
+          <p className="text-sm text-gray-500">
+            Profile settings form will be built in the next feature task.
+          </p>
+        </CardBody>
+      </Card>
     </div>
   );
 }
