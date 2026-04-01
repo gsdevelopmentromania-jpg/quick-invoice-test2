@@ -1,162 +1,185 @@
-# Authentication System — Implementation Report
+# Authentication System Implementation
 
-**Project:** Quick Invoice Test 2  
-**Date:** 2026-04-01  
-**Phase:** Auth & Billing · Step 1
-
----
-
-## Summary
-
-Full authentication system implemented using NextAuth v4 with JWT sessions, bcrypt password hashing, Google/GitHub OAuth, password reset flow, rate limiting, protected routes middleware, and GDPR-compliant account deletion.
+**Date:** 2026-04-01
+**Project:** Quick Invoice Test 2
+**Phase:** Auth & Billing → Step 1 (Authentication)
 
 ---
 
-## Files Written / Modified
+## Overview
 
-| File | Status | Description |
-|------|--------|-------------|
-| `src/app/api/auth/register/route.ts` | **Rewritten** | bcrypt password hashing, rate limiting by IP |
-| `src/app/api/auth/forgot-password/route.ts` | **New** | Token generation, email dispatch, rate limiting |
-| `src/app/api/auth/reset-password/route.ts` | **New** | Token validation, password update |
-| `src/app/api/user/change-password/route.ts` | **New** | Authenticated password change |
-| `src/app/api/user/delete/route.ts` | **New** | GDPR account deletion |
-| `src/app/(auth)/login/page.tsx` | **Updated** | OAuth buttons, success banners for reset/register |
-| `src/app/(auth)/register/page.tsx` | **Updated** | OAuth buttons, fixed API contract |
-| `src/app/(auth)/forgot-password/page.tsx` | **New** | Forgot password form with success state |
-| `src/app/(auth)/reset-password/page.tsx` | **New** | Token-aware reset password form |
-| `src/middleware.ts` | **Updated** | Added forgot-password/reset-password to matcher |
-| `src/__tests__/helpers/mock-prisma.ts` | **Updated** | Added `passwordResetToken`, `user.create/delete` mocks |
-| `src/__tests__/api/auth.test.ts` | **New** | 20 test cases covering all new endpoints |
+Full authentication system implemented using NextAuth v4 with JWT sessions, bcrypt password hashing, email verification, and GDPR-compliant account deletion.
 
 ---
 
-## Architecture Decisions
+## What Was Built
 
-### Session Strategy
-- **JWT sessions** (not database sessions) — avoids extra DB round-trip on every request
-- 30-day JWT expiry; refresh handled by NextAuth automatically
-- `session.user.id` injected via `jwt` + `session` callbacks in `authOptions`
+### 1. Schema Changes (`prisma/schema.prisma`)
 
-### Password Security
-- **bcrypt cost factor 12** — appropriate balance of security vs. latency (~300ms on commodity hardware)
-- Passwords never stored in plaintext; `passwordHash` field is nullable to support OAuth-only accounts
-- Old password always verified before change; `passwordHash: null` returns clear OAuth error
+Added to `User` model:
+- `emailVerified DateTime?` — required by NextAuth adapter for OAuth
+- `passwordHash String?` — stores bcrypt-hashed passwords for credentials auth
 
-### Rate Limiting
-| Endpoint | Limit | Window | Key |
-|----------|-------|--------|-----|
-| `/api/auth/register` | 5 req | 1 hour | IP |
-| `/api/auth/[...nextauth]` (login) | 5 req | 15 min | email |
-| `/api/auth/forgot-password` | 10 req | 15 min | IP |
-| `/api/auth/forgot-password` | 3 req | 15 min | email |
-| `/api/auth/reset-password` | 5 req | 15 min | IP |
+New model: `PasswordResetToken`
+- Stores one-time password reset tokens with expiry and used-at tracking
+- Cascades on user deletion
 
-> Rate limiter is in-memory (Map). For multi-instance deployments, swap `src/lib/rate-limit.ts` store with Redis/Upstash using the same interface.
-
-### Password Reset Flow
-1. User submits email → `POST /api/auth/forgot-password`
-2. Existing unused tokens invalidated (marked `usedAt = now`)
-3. 64-char hex token generated via `crypto.getRandomValues` (CSPRNG)
-4. Token stored in `password_reset_tokens` with 1-hour expiry
-5. Reset link emailed: `{APP_URL}/reset-password?token={token}`
-6. User submits new password → `POST /api/auth/reset-password`
-7. Token validated: exists + not used + not expired
-8. New password hashed, user updated, token marked used — in a DB transaction
-9. Redirect to `/login?reset=1` with success banner
-
-**Anti-enumeration:** forgot-password always returns HTTP 200 with the same message, regardless of whether the email exists.
-
-### OAuth
-- Google + GitHub providers configured in `src/lib/auth.ts`
-- `PrismaAdapter` handles account linking automatically
-- OAuth users get `passwordHash: null` — change-password endpoint returns a clear error for these users
-
-### Protected Routes
-Middleware (`src/middleware.ts`) uses `withAuth` from `next-auth/middleware`:
-- **Protected:** `/dashboard/*`, `/invoices/*`, `/clients/*`, `/settings/*`, all `/api/user/*` and `/api/invoices/*` and `/api/clients/*` routes
-- **Public:** `/login`, `/register`, `/forgot-password`, `/reset-password`, `/api/auth/*`
-- Logged-in users redirected away from auth pages → `/dashboard`
-
-### GDPR Account Deletion (`DELETE /api/user/delete`)
-- Requires explicit confirmation string `"DELETE MY ACCOUNT"`
-- Password-based users must also provide current password
-- OAuth users deleted without password check
-- DB cascade (`onDelete: Cascade`) removes all linked clients, invoices, subscriptions, sessions, accounts, and password reset tokens
-- Returns 200 so client can call `signOut()` cleanly before redirecting
+New migration: `prisma/migrations/20260401000001_add_auth_fields/`
 
 ---
 
-## Test Coverage
+### 2. Rate Limiting (`src/lib/rate-limit.ts`)
 
-```
-auth.test.ts
-  POST /api/auth/register (5 tests)
-    ✓ returns 400 for missing email
-    ✓ returns 400 for password < 8 chars
-    ✓ returns 429 when rate limited
-    ✓ returns 409 when email already exists
-    ✓ returns 201 and creates user on success
-    ✓ normalises email to lowercase
+Simple sliding-window in-memory rate limiter.
 
-  POST /api/auth/forgot-password (3 tests)
-    ✓ returns 400 for invalid email
-    ✓ returns 200 even when user does not exist
-    ✓ creates reset token and sends email when user exists
+| Endpoint | Limit |
+|----------|-------|
+| Login (per email) | 5 attempts / 15 min |
+| Signup (per IP) | 5 registrations / 1 hr |
+| Forgot password (per IP) | 10 requests / 1 hr |
+| Forgot password (per email) | 3 requests / 1 hr |
+| Reset password (per IP) | 10 requests / 1 hr |
 
-  POST /api/auth/reset-password (5 tests)
-    ✓ returns 400 for missing token
-    ✓ returns 400 for non-existent token
-    ✓ returns 400 for already-used token
-    ✓ returns 400 for expired token
-    ✓ returns 200 and updates password for valid token
-
-  POST /api/user/change-password (5 tests)
-    ✓ returns 401 when not authenticated
-    ✓ returns 400 if newPassword too short
-    ✓ returns 400 for OAuth-only user
-    ✓ returns 400 when current password wrong
-    ✓ returns 200 and updates password on success
-
-  DELETE /api/user/delete (5 tests)
-    ✓ returns 401 when not authenticated
-    ✓ returns 400 for wrong confirmation phrase
-    ✓ returns 400 when password-user omits password
-    ✓ returns 400 when password incorrect
-    ✓ returns 200 and deletes user on valid request
-    ✓ deletes OAuth user without password
-```
+> For multi-instance production deployments, replace the Map store with Redis (Upstash recommended).
 
 ---
 
-## Environment Variables Required
+### 3. Email/Password Auth (`src/lib/auth.ts`)
 
-```env
-NEXTAUTH_SECRET=<openssl rand -base64 32>
-NEXTAUTH_URL=https://yourdomain.com
-
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
-
-GITHUB_CLIENT_ID=
-GITHUB_CLIENT_SECRET=
-
-# Email (SMTP or configure sendPasswordResetEmail for Resend)
-SMTP_HOST=
-SMTP_PORT=587
-SMTP_USER=
-SMTP_PASS=
-EMAIL_FROM=noreply@quickinvoice.app
-
-NEXT_PUBLIC_APP_URL=https://yourdomain.com
-```
+Fixed `CredentialsProvider.authorize()`:
+- Normalizes email to lowercase
+- Applies rate limiting before DB lookup
+- Verifies password with `bcrypt.compare()`
+- Returns user object on success; `null` on failure; throws on rate limit exceeded
 
 ---
 
-## User Flow: Signup → Login → Protected Route → Logout → Password Reset
+### 4. Registration (`src/app/api/auth/register/route.ts`)
 
-1. **Signup** — `POST /api/auth/register` with `{email, password, fullName}` → 201 → redirect `/login?registered=1`
-2. **Login** — credentials or OAuth via NextAuth → JWT issued → redirect `/dashboard`
-3. **Protected route** — middleware checks JWT; missing token → redirect `/login`
-4. **Logout** — `signOut()` from NextAuth clears JWT cookie
-5. **Password reset** — forgot-password form → email with link → reset-password form → `/login?reset=1`
+`POST /api/auth/register`
+- Validates email + password (min 8 chars) + optional fullName
+- Rate-limited by IP
+- Creates user with `bcrypt.hash(password, 12)`
+- Generates 32-byte hex verification token, stores in `verification_tokens`
+- Sends verification email via `sendEmailVerificationEmail()`
+- Returns `201` for both new and existing emails (prevents user enumeration)
+
+---
+
+### 5. Email Verification
+
+**API:** `GET /api/auth/verify-email?token=xxx&email=user@example.com`
+- Looks up token in `verification_tokens`
+- Validates expiry (24-hour window)
+- Sets `user.emailVerified = now()` in a transaction
+- Deletes used token
+
+**Page:** `src/app/(auth)/verify-email/page.tsx`
+- Calls API on mount, shows loading to success or error state
+
+---
+
+### 6. Password Reset
+
+**Request:** `POST /api/auth/forgot-password`
+- Rate-limited (per IP + per email)
+- Invalidates any existing unexpired tokens
+- Creates new `PasswordResetToken` (1-hour expiry)
+- Sends reset email; always returns 200 (no enumeration)
+
+**Reset:** `POST /api/auth/reset-password`
+- Validates token exists, not used, not expired
+- Hashes new password with bcrypt
+- Updates `user.passwordHash` and marks token as used in transaction
+
+**Pages:**
+- `src/app/(auth)/forgot-password/page.tsx` — email input form
+- `src/app/(auth)/reset-password/page.tsx` — new password form (reads token from URL)
+
+---
+
+### 7. OAuth (Google and GitHub)
+
+Already configured via NextAuth providers. Login and register pages now include OAuth buttons with proper `signIn("google")` / `signIn("github")` calls.
+
+---
+
+### 8. Session Management
+
+- Strategy: `jwt` with 30-day maxAge
+- JWT callback stores `user.id` in token
+- Session callback exposes `session.user.id`
+- NextAuth handles token refresh automatically
+
+---
+
+### 9. Protected Routes (`src/middleware.ts`)
+
+Updated matcher to include:
+- `/forgot-password`, `/reset-password`, `/verify-email` — public (auth pages)
+- All dashboard, API routes — require valid JWT token
+
+Auth pages redirect logged-in users to `/dashboard`.
+
+---
+
+### 10. User Profile API (`src/app/api/user/profile/route.ts`)
+
+Added `DELETE /api/user/profile`:
+- Requires `{ confirmEmail }` in body
+- Matches against `user.email` (case-insensitive)
+- Calls `prisma.user.delete()` which cascades to clients, invoices, subscriptions, sessions, accounts
+
+---
+
+### 11. Change Password (`src/app/api/user/change-password/route.ts`)
+
+`POST /api/user/change-password`
+- Requires active session
+- Verifies `currentPassword` against stored hash
+- Rejects OAuth-only accounts (no `passwordHash`)
+- Updates hash with new bcrypt-hashed password
+
+---
+
+### 12. Email Module (`src/lib/email.ts`)
+
+Added `sendEmailVerificationEmail()` alongside existing `sendPasswordResetEmail()`.
+
+---
+
+## Files Written
+
+| File | Purpose |
+|------|---------|
+| `prisma/schema.prisma` | Added `emailVerified`, `passwordHash`, `PasswordResetToken` |
+| `prisma/migrations/20260401000001_add_auth_fields/migration.sql` | DB migration |
+| `src/lib/rate-limit.ts` | In-memory rate limiter |
+| `src/lib/auth.ts` | Fixed CredentialsProvider with bcrypt + rate limiting |
+| `src/lib/email.ts` | Added `sendEmailVerificationEmail` |
+| `src/app/api/auth/register/route.ts` | Full email/password signup |
+| `src/app/api/auth/verify-email/route.ts` | Email verification endpoint |
+| `src/app/api/auth/forgot-password/route.ts` | Password reset request |
+| `src/app/api/auth/reset-password/route.ts` | Password reset completion |
+| `src/app/api/user/profile/route.ts` | Added DELETE (account deletion) |
+| `src/app/api/user/change-password/route.ts` | Password change endpoint |
+| `src/app/(auth)/forgot-password/page.tsx` | Forgot password UI |
+| `src/app/(auth)/reset-password/page.tsx` | Reset password UI |
+| `src/app/(auth)/verify-email/page.tsx` | Email verification UI |
+| `src/app/(auth)/login/page.tsx` | Updated with OAuth buttons + banners |
+| `src/app/(auth)/register/page.tsx` | Updated with OAuth buttons + success state |
+| `src/middleware.ts` | Updated matchers for new auth pages |
+| `src/__tests__/helpers/mock-prisma.ts` | Added verificationToken + passwordResetToken mocks |
+| `src/__tests__/api/auth.test.ts` | Auth system test suite (22 tests) |
+
+---
+
+## Security Decisions
+
+1. **No email enumeration** — Register and forgot-password always return 200
+2. **bcrypt cost factor 12** — ~300ms hashing, brute-force resistant
+3. **Lowercase email normalization** — Prevents duplicate accounts via case variation
+4. **Token invalidation** — Existing reset tokens invalidated before issuing new one
+5. **One-time tokens** — Marked `usedAt` on first use, rejected on reuse
+6. **Cascading deletes** — All user data removed atomically via Prisma `onDelete: Cascade`
+7. **Email confirmation for deletion** — Prevents accidental or CSRF-triggered deletion
