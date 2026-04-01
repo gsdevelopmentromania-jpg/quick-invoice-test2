@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { dollarsToCents } from "@/types";
 import type { ApiResponse, PaginatedResponse, InvoiceWithClient } from "@/types";
+import { canCreateInvoice } from "@/lib/billing";
 
 const lineItemSchema = z.object({
   description: z.string().min(1, "Description is required"),
@@ -73,6 +74,7 @@ export async function GET(
  * POST /api/v1/invoices
  * Creates a new invoice (DRAFT) for the authenticated user.
  * All monetary values accepted in dollars; stored in cents.
+ * Enforces plan-based invoice creation limits.
  */
 export async function POST(
   req: NextRequest
@@ -86,6 +88,27 @@ export async function POST(
   const parsed = createInvoiceSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.message }, { status: 400 });
+  }
+
+  // ── Feature gate: enforce monthly invoice limit ─────────────────────────
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { plan: true },
+  });
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const allowed = await canCreateInvoice(session.user.id, user.plan);
+  if (!allowed) {
+    return NextResponse.json(
+      {
+        error:
+          "You have reached your monthly invoice limit. Upgrade to Pro for unlimited invoices.",
+      },
+      { status: 403 }
+    );
   }
 
   const { clientId, dueDate, currency, taxRate, discountAmount, notes, footer, lineItems } =
