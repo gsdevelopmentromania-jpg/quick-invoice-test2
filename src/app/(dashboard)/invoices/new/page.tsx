@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -122,7 +122,7 @@ export default function NewInvoicePage(): React.ReactElement {
   const discount = parseFloat(discountAmount) || 0;
   const total = subtotal + taxAmount - discount;
 
-  async function handleSubmit(asDraft: boolean): Promise<void> {
+  async function handleSubmit(): Promise<void> {
     setError(null);
 
     if (!clientId) {
@@ -297,7 +297,6 @@ export default function NewInvoicePage(): React.ReactElement {
                         onChange={(e) =>
                           updateLineItem(item.id, "description", e.target.value)
                         }
-                        label={idx === 0 ? undefined : undefined}
                         aria-label="Description"
                       />
                     </div>
@@ -482,7 +481,7 @@ export default function NewInvoicePage(): React.ReactElement {
             variant="secondary"
             size="md"
             loading={loading}
-            onClick={() => void handleSubmit(true)}
+            onClick={() => void handleSubmit()}
             disabled={loading}
           >
             Save as Draft
@@ -491,7 +490,7 @@ export default function NewInvoicePage(): React.ReactElement {
             variant="primary"
             size="md"
             loading={loading}
-            onClick={() => void handleSubmit(false)}
+            onClick={() => void handleSubmit()}
             disabled={loading}
           >
             Send Invoice
