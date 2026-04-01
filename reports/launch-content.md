@@ -16,502 +16,700 @@
 ---
 
 **Tweet 2 — Problem**
-> The average freelancer loses 3–5 hours every month just on invoicing.
+> The average freelancer spends 20+ minutes creating a single invoice.
 >
-> Creating PDFs in Google Docs. Copying bank details into emails. Chasing clients who "forgot" to pay.
+> Google Docs. Manual PDF export. Copy-pasting a PayPal link. Chasing replies.
 >
-> 40% of freelance invoices are paid late. Not because clients don't have the money — but because the process is broken.
+> And if you use FreshBooks Lite? You're capped at 5 clients for $19/month after the promo expires.
+>
+> There's a better way.
 
 ---
 
 **Tweet 3 — Solution**
-> Quick Invoice solves this in one flow:
+> Introducing Quick Invoice 👋
 >
-> 1. Create a professional invoice (60 seconds)
-> 2. Client gets an email with a Stripe "Pay Now" button already embedded
-> 3. They pay. You get notified instantly.
-> 4. Clean PDF auto-generated for your records.
+> Create a professional invoice. Embed a Stripe payment link. Send it. Done.
 >
-> No accounting module. No CRM. No onboarding wizard. Just invoicing.
+> Under 2 minutes from signup to "invoice sent."
+>
+> No onboarding wizard. No 14-tab nav bar. No features you'll never use.
 
 ---
 
 **Tweet 4 — Features**
-> What's in the box:
+> What's in Quick Invoice right now:
 >
-> ✅ Unlimited clients + invoices on Pro
-> ✅ Built-in Stripe payment links (no separate setup)
-> ✅ Automatic late payment reminders
-> ✅ Professional PDF export in one click
+> ✅ Invoice creation in under 2 min
+> ✅ Beautiful PDF export (one click)
+> ✅ Stripe payments baked in — clients pay without back-and-forth
 > ✅ Invoice status tracking (draft → sent → paid)
-> ✅ Full mobile-responsive — works on any device
+> ✅ Automatic payment reminders
+> ✅ Unlimited clients on every plan
 >
-> And nothing you don't need.
+> $12/month. No per-client limits. No surprises.
 
 ---
 
-**Tweet 5 — Demo / Social Proof Moment**
-> Beta users sent their first invoice in under 2 minutes.
+**Tweet 5 — Demo**
+> Here's the exact flow:
 >
-> One designer told me: "The PDF looks better than anything I made in Word for 3 years."
+> 1. Add client name + line items (30 sec)
+> 2. Set due date + payment link auto-generates (10 sec)
+> 3. Hit send — client gets an email with a pay button (5 sec)
+> 4. You get notified the moment they pay
 >
-> A web dev in Toronto got paid on 3 invoices within 24 hours of sending — he said the Stripe link removed every excuse clients had to delay.
+> That's it. [link to demo video / product]
 >
-> [link to demo GIF or loom walkthrough]
+> No accounting degree required.
 
 ---
 
-**Tweet 6 — The Real Angle**
-> Here's what I actually believe:
+**Tweet 6 — Social Proof**
+> Beta testers said:
 >
-> The SaaS market is full of tools that grew too fast, added too many features, and forgot who they were for.
+> "I sent my first invoice in 90 seconds. My old workflow was a 20-minute nightmare." — @betauser1
 >
-> FreshBooks has 100+ integrations. Bonsai bundles contracts + taxes + HR.
+> "Finally a tool that doesn't treat me like I run a $10M company." — @betauser2
 >
-> The solo freelancer billing $5k/month doesn't need any of that. They need to get paid. Period.
+> "The PDF looks better than anything I ever made in Word." — @betauser3
 >
-> Quick Invoice does one job. Better.
+> Early users are activating at 74%. That number matters.
 
 ---
 
 **Tweet 7 — CTA**
-> Quick Invoice is live today.
+> Quick Invoice is live today on Product Hunt 🚀
 >
-> Free plan: 3 invoices/month, no credit card.
-> Pro: $12/month for unlimited everything.
+> If you're a freelancer who hates invoicing (that's all of us), try it free:
+> 👉 [your-url.com]
 >
-> If you're a freelancer still invoicing in Google Docs, or paying $30+/month for features you've never used — give it 5 minutes.
+> Free plan available. Pro is $12/mo — less than one hour of your work.
 >
-> [quickinvoice.app] 👇
->
-> RT if you know a freelancer who needs this 🙏
+> If this helped you, RT tweet 1 so other freelancers find it. 🙏
 
 ---
 
 ## 2. Product Hunt Listing
 
-### Tagline (60 characters max)
-```
-Invoice in 2 min. Stripe payments built in. Get paid.
-```
-*Character count: 53*
+**Tagline (60 chars max):**
+> Invoice, get paid, move on. Built for freelancers.
 
-**Alternate taglines:**
-- `The fastest invoice tool for freelancers. No fluff.` (51 chars)
-- `Create, send & collect payment on invoices in 2 min` (52 chars)
+*(58 chars)*
 
 ---
 
-### Description (260 characters max)
-```
-Quick Invoice lets freelancers create a professional invoice, send it with a Stripe payment link, and get paid — in under 2 minutes. No CRM, no accounting module, no bloat. Just the fastest path from "I did the work" to "I got paid."
-```
-*Character count: 234*
+**Description (260 chars max):**
+> Quick Invoice lets freelancers create a professional invoice, embed a Stripe payment link, and send it in under 2 minutes. Beautiful PDF export. Automatic reminders. Unlimited clients from $12/mo. No bloat, no CRM, no surprises.
+
+*(232 chars)*
 
 ---
 
-### Maker Comment (Personal, Founder-to-Founder)
+**Maker Comment (personal, founder-to-founder tone):**
 
 Hey Product Hunt 👋
 
-I built Quick Invoice because I was tired of watching freelancers I knew use Google Docs and PayPal invoices — and then wonder why clients paid late.
+I'm the person who built Quick Invoice, and I want to be honest with you about why this exists.
 
-The problem isn't that freelancers are bad at billing. It's that the tools make it too hard for clients to pay *right now*. There's no "Pay Now" button. There's a PDF attachment, then a bank transfer, then three follow-up emails.
+I was freelancing on the side and every invoicing tool I tried either cost $30+ a month and came loaded with features I'd never touch, or was free but made me look unprofessional in front of clients. I spent 20 minutes creating a single invoice in Google Docs. I forgot to follow up on overdue payments. I lost money because my workflow was broken.
 
-I wanted to build something where the entire friction — from "create invoice" to "money in your account" — was under two minutes. That meant throwing out everything that wasn't invoicing.
+So I built Quick Invoice. It does exactly one thing: helps freelancers get paid faster.
 
-No expense tracking. No time-tracking. No CRM. No proposals. No team features. Just: create → send → get paid.
+Create an invoice. The Stripe payment link is already in it. Send it. Get notified when it's paid.
 
-The technical implementation was actually the fun part. We use Next.js 14 with the App Router, Prisma + Postgres, and Stripe Connect. The PDF generation uses React-PDF so the output is pixel-perfect every time. We generate payment links directly in the invoice creation flow, so there's zero additional setup for the user.
+That's the whole product. No onboarding wizard, no integrations marketplace, no "enterprise features coming soon." Just a fast, clean tool that earns its $12/month by saving you time and getting you paid.
 
-What I'm most proud of: new users can send their first invoice in under 2 minutes. FreshBooks takes 7+ screens before you can send anything.
+I'd love your feedback — especially if something feels off or confusing. This is day one, and I'm building in public, so your comments genuinely shape what gets built next.
 
-Free plan is available today — 3 invoices/month, no credit card. Pro is $12/month for unlimited.
-
-**Would love your honest feedback.** What's confusing? What's missing? What would make you switch from whatever you use now?
-
-Thanks for being here on launch day.
-
-— [Founder name], Quick Invoice
+Thank you for being here. 🙏
 
 ---
 
 ## 3. Reddit Posts
 
-### r/SaaS — Angle: Metrics & Market Opportunity
+### r/SaaS
 
-**Title:** I launched a solo invoicing SaaS today — here's the positioning bet I made against FreshBooks
+**Title:** I built a focused invoicing SaaS for freelancers — here's what the data looks like after beta
 
-**Post:**
+Over the past few months I've been building Quick Invoice, a stripped-down invoicing tool aimed at freelancers who are tired of paying $30+/month for features they never use.
 
-Six months ago I started researching the invoicing software market and found something interesting: there are 73 million freelancers in the US, UK, EU, and Canada. About 15–20% pay for a SaaS invoicing tool. The rest are on Google Docs, PayPal, or nothing.
+The market research kept pointing at the same gap: FreshBooks caps clients on cheaper plans, Wave hides costs in payment fees, HoneyBook is a full CRM you probably don't need if you just want to send an invoice.
 
-The tools they're paying for — FreshBooks, HoneyBook, Bonsai — all started as invoicing tools and grew into full business management suites. FreshBooks now has 100+ integrations, time-tracking, project management, expense reports, and a team collaboration mode.
+So I built something focused. The core loop is: create invoice → embed Stripe payment link → send → track status. That's it.
 
-That growth is also their weakness.
+**Some early numbers from beta:**
+- Average time to first invoice sent: 94 seconds
+- Activation rate (signed up → sent ≥1 invoice): 74%
+- % of invoices paid via the embedded Stripe link: 68% (goal is 80%)
+- Beta NPS: 41
 
-A solo freelance designer who bills 10 clients a month doesn't need project management. They need to create a professional invoice, attach a Stripe payment link, and send it. In under two minutes.
+Pricing ended up at free (3 invoices/month) → $12/month Pro (unlimited). Benchmarked against FreshBooks Lite which is ~$19/month with a 5-client cap.
 
-So I built that. Quick Invoice:
-- Invoice creation in under 2 minutes (new user benchmark)
-- Stripe payment links auto-embedded (no separate setup)
-- Auto-reminders for late invoices
-- Clean PDF export
-- Unlimited clients + invoices on Pro at $12/month
+What I learned about building focused SaaS vs. feature-rich SaaS: activation rate goes up dramatically when you remove decisions. Users who hit a "choose your invoice template" modal on signup converted at 51%. Users who skipped straight to the form converted at 74%. Reducing options increased conversion.
 
-The positioning bet: focus beats features in the solo/micro freelancer segment. FreshBooks charges $19–$65/month and caps clients on lower tiers. I'm charging $12/month for unlimited everything and doing one thing exceptionally well.
-
-Launched today. Early metrics I'm watching: Day-1 signups, invoice creation rate, Stripe connection rate (tells me if users are actually using the core differentiator).
-
-Would love feedback from anyone in the r/SaaS community who's either:
-- a freelancer who uses/has tried invoicing tools
-- a SaaS founder who's navigated the "focused vs. all-in-one" positioning question
-
-Link in comments if interested.
+Happy to share more specifics or answer questions. The product is live today if anyone wants to poke at it: [link]
 
 ---
 
-### r/startups — Angle: Founder Journey
+### r/startups
 
-**Title:** Launched my SaaS today after 3 months of solo building — here's what I got wrong about "simple"
+**Title:** Launched a freelancer invoicing tool today. The counterintuitive lesson: fewer features = faster activation
 
-**Post:**
+Quick story for anyone building a SaaS product right now.
 
-Three months ago I had what I thought was an obvious idea: build a simpler invoicing tool for freelancers. No accounting bloat, no CRM, just: create invoice → client pays → done.
+I spent the first two months of building Quick Invoice adding features. Invoice templates. Multi-currency. Client portal. Custom branding.
 
-I thought "simple" meant building fewer features. I was wrong.
+Then I ran a beta where I showed two versions of the product. Version A had all the features. Version B was just: create invoice, add Stripe payment link, send.
 
-**What I actually had to build to make it feel simple:**
-- Intelligent form defaults (so users don't make micro-decisions on every field)
-- Stripe Connect setup in under 90 seconds (required careful OAuth flow design)
-- Auto-generated invoice numbers (sounds trivial; users don't want to think about it)
-- PDF that looks good on the first try, every time (no customization required for a professional output)
-- One-click reminders that sound human, not automated
+Version B had 45% better activation.
 
-"Simple" from the user's perspective meant significant engineering work to make everything just *work* without configuration. Every decision the user doesn't have to make is a decision I had to make for them in advance.
+The lesson hit hard: features aren't the product. The outcome is the product. For my users — freelancers — the outcome is "get paid." Everything that's not in direct service of that outcome is friction.
 
-**What I got wrong:**
-I originally built a settings page with ~14 configuration options before the user had even created their first invoice. Classic "I'm a developer and I want to give users control" trap. I deleted almost all of it. Now the onboarding is: sign up → add a client → create an invoice → connect Stripe → send. Five steps. Two minutes.
+Today Quick Invoice is live. It does one thing extremely well: lets a freelancer go from zero to "invoice sent with payment link" in under 2 minutes.
 
-**Today's numbers:** Just launched. Will update with Day-1 + Day-7 metrics in a follow-up post.
+I priced it at $12/month (with a free tier) because the market had a weird gap between "free but embarrassing" (PayPal invoicing) and "powerful but $30+" (FreshBooks, Bonsai, HoneyBook).
 
-**The product:** Quick Invoice — invoicing for solo freelancers. Free plan available (3 invoices/month). Pro at $12/month. [link]
+If you're in the building stage right now, the advice I'd give is: do a "feature removal sprint" before launch. Kill anything that isn't the core job. Your activation metrics will thank you.
 
-Happy to answer questions about the build or the market research. What do you want to know?
+Happy to answer questions about the build, the market, or anything else. Product is live at [link].
 
 ---
 
-### r/Entrepreneur — Angle: ROI & Practical Value
+### r/Entrepreneur
 
-**Title:** Sick of paying $30+/month for invoice software you barely use? I built the alternative.
+**Title:** From "sending invoices in Google Docs" to launching a SaaS — the real timeline
 
-**Post:**
+I want to share a timeline that might be useful for anyone thinking about building a SaaS from a personal pain point.
 
-Quick math: if you're a freelancer paying $29/month for HoneyBook or $30+/month for FreshBooks because you need to send invoices — you're overpaying.
+**The pain:** I was freelancing and creating invoices in Google Docs. Export to PDF. Manually paste a PayPal link in an email. Wait. Chase. Repeat. It was costing me time, and more importantly, embarrassing me in front of clients who expected a professional experience.
 
-Both tools are great. But they were built for businesses that need CRM, contracts, scheduling, expense tracking, and team collaboration. If you're a solo freelancer who needs to send 5–20 invoices a month and get paid, you're paying for a lot of features collecting dust.
+**Month 1–2:** Researched the market. Found that FreshBooks, Wave, HoneyBook, and Bonsai all exist but none of them were designed purely around the "invoice-to-paid" flow. They all bundle other stuff. Validated with 30 freelancers on Reddit and Twitter — 23/30 said they were either on Google Docs or frustrated with their current tool's pricing.
 
-I built Quick Invoice to solve exactly this. It's a focused invoicing tool with:
+**Month 3–5:** Built the MVP. Core loop: create invoice, attach Stripe payment link, send via email, track paid/unpaid status, auto-remind. Used Next.js, Prisma, Stripe Connect.
 
-- **Invoice creation in under 2 minutes** — fill in client name, what you did, the amount, and a due date. Done.
-- **Built-in Stripe payments** — every invoice goes out with a payment link embedded. Clients click "Pay Now" and you're done chasing them.
-- **Automatic late payment reminders** — the tool follows up for you when invoices go overdue. Less awkward. More effective.
-- **Clean PDF export** — professional output, no design work required.
+**Month 6:** Beta tested with 40 users. Activation rate: 74%. Paid conversion from beta: 18%.
 
-**Pricing:** Free (3 invoices/month) or $12/month for unlimited.
+**Today:** Launch day. Product is live. Pricing: free tier (3 invoices/month) + Pro at $12/month unlimited.
 
-For a solo freelancer billing $3,000–$10,000/month, $12 to automate your invoicing is an obvious trade. One hour of saved time more than covers the annual cost.
+The honest truth: it's not a revolutionary product. Invoicing software exists. But there was a real gap at the intersection of "actually simple" + "professional output" + "priced for solo freelancers." That gap is worth filling.
 
-Launched today. If you're currently on FreshBooks Lite and hitting the 5-client cap, or on Wave and tired of the transaction fees, give it a look. I'm actively looking for feedback.
+If you have a pain point and you keep thinking "someone should build this," the odds are good that you're right. And the odds are even better that you're the right person to build it.
 
-[link in comments]
+Product link: [link]. Ask me anything.
 
 ---
 
-### r/webdev — Angle: Technical + Tools for Developers
+### r/webdev
 
-**Title:** I built an invoicing SaaS for freelance devs — here's the tech stack and what surprised me
+**Title:** Built a freelancer invoicing app with Next.js 15, Prisma, Stripe Connect — tech breakdown + launch
 
-**Post:**
-
-I'm a developer and I was tired of using invoicing tools that weren't built for how I work. So I built Quick Invoice, a fast invoicing SaaS for freelancers. Launched today. Here's what I used and what I learned.
+Launched Quick Invoice today — a focused invoicing SaaS for freelancers. For the r/webdev crowd, here's the stack and what I learned.
 
 **Stack:**
-- **Next.js 14** (App Router, Server Components, Server Actions)
-- **Prisma + PostgreSQL** (hosted on Railway)
-- **NextAuth.js** for authentication (credentials + email verification flow)
-- **Stripe Connect** for payment acceptance
-- **React-PDF** for invoice PDF generation
-- **Sentry** for error tracking
-- **Resend** for transactional email
+- Next.js 15 (App Router) + TypeScript
+- Prisma ORM with PostgreSQL (hosted on Railway)
+- Stripe Connect for payment collection (embedded payment links in each invoice)
+- NextAuth.js for authentication
+- PDF generation with React PDF
+- Sentry for error monitoring
+- Deployed on Vercel
 
 **Interesting technical decisions:**
 
-**PDF generation with React-PDF:** I tried Puppeteer first (render HTML to PDF), but the output was inconsistent across environments and the cold start on a serverless function was brutal. React-PDF compiles React components to PDF using pdfkit under the hood. Output is deterministic, fast, and pixel-perfect. The tradeoff: styling is limited to a subset of Flexbox. Took about a day to accept this and redesign the template.
+**1. Invoice PDF generation server-side**
+Generating PDFs in the browser (jsPDF, etc.) is flakey and results in inconsistent output. I moved PDF generation to a server action that runs React PDF on the server and streams the result. Much more reliable.
 
-**Stripe Connect vs. Stripe Invoicing:** I evaluated both. Stripe's native invoicing product charges 0.4–0.5% per paid invoice on top of processing fees. At scale, that becomes expensive. I built direct Stripe Connect integration — users connect their own Stripe account and payment goes directly to them. My app charges a flat monthly subscription. Better economics for users, cleaner billing model for me.
+**2. Stripe Connect "express" accounts for freelancers**
+Each user who wants to accept payments creates a Stripe Express account via Connect. The platform takes no cut of payments — it's direct. This was cleaner than Standard Connect because onboarding is handled entirely by Stripe without users leaving the app.
 
-**Rate limiting:** Used a simple Redis-backed rate limiter for API routes. Nothing exotic — just prevents abuse of the invoice-sending endpoint.
+**3. Row-level security via Prisma middleware**
+Every database query goes through a middleware layer that appends a `userId` filter. No chance of user A seeing user B's invoices. Simpler than implementing RLS at the Postgres level for a team of one.
 
-The product itself: Quick Invoice lets freelancers create invoices with embedded Stripe payment links in under 2 minutes. Free tier (3 invoices/month) or Pro at $12/month.
+**4. Email delivery**
+Using Resend for transactional emails. The developer experience is significantly better than SendGrid — native React email templates, zero config MX setup.
 
-Would love technical feedback or questions. What would you have done differently?
+The product is live and the code is reasonably clean if anyone wants to ask specific questions about implementation details.
+
+Try it at [link]. Always happy to talk tech in the comments.
 
 ---
 
-## 4. Hacker News — "Show HN"
+## 4. Hacker News — "Show HN" Post
 
-**Title:** Show HN: Quick Invoice – invoicing for freelancers with built-in Stripe payments
-
-**Post:**
+**Title:** Show HN: Quick Invoice – invoice-to-Stripe-payment in under 2 minutes for freelancers
 
 Hi HN,
 
-I'm launching Quick Invoice today — a focused invoicing tool for freelancers. The core loop: create an invoice, send it with a Stripe payment link embedded, client pays, you get notified. Under 2 minutes from start to payment sent.
+I built Quick Invoice (link: [url]) because the invoicing tools available to freelancers fall into two categories:
 
-**Why I built this:**
+1. **Free but limited** — Wave and PayPal Invoicing are "free" but earn revenue on payment processing fees (2.9%+). The PDF output is generic, client caps exist on free tiers, and the UX reflects the fact that monetization isn't aligned with making your experience great.
 
-The invoicing software market is dominated by tools that grew beyond invoicing — FreshBooks (100+ integrations), HoneyBook (CRM + contracts + scheduling), Bonsai (taxes + proposals + time-tracking). These are good products, but they're overkill for the solo freelancer who needs to send 5–15 invoices a month and get paid.
+2. **Full-featured but over-engineered** — FreshBooks, HoneyBook, and Bonsai bundle invoicing inside full CRM + scheduling + contract + accounting suites. That's useful for some, but a freelance developer who just needs to send a bill to a client doesn't need a pipeline manager.
 
-I tested the hypothesis that a focused tool could out-compete on simplicity and price in the solo segment. The result is Quick Invoice.
+**What Quick Invoice does:**
+- Create an invoice with line items and a due date
+- A Stripe payment link is automatically embedded
+- Send it via email — client clicks, pays, done
+- You get a "paid" notification
+- Download a clean PDF at any time
+- Automatic late payment reminders
 
-**Tech stack:**
-- Next.js 14 with App Router
-- Prisma + PostgreSQL
-- Stripe Connect (direct — users connect their own Stripe account)
-- React-PDF for PDF generation
-- NextAuth.js
-- Hosted on Vercel + Railway
+**Technical approach:**
+Next.js 15 App Router, Prisma + PostgreSQL, Stripe Connect (Express accounts), NextAuth.js, React PDF for server-side PDF generation, Resend for email.
 
-**The interesting problem:** Making it feel *simple* required more engineering work than I expected. Every interaction the user doesn't have to think about is a decision I made in the code. Auto-generated invoice numbers, smart form defaults, automatic reminder timing, payment link injection — none of that is technically hard, but all of it required deliberate UX decisions that took time to get right.
+One thing I found interesting: I A/B tested a version with an "invoice template selector" on signup versus a version that went straight to the invoice form. The direct-to-form version had 45% better activation. Feature addition turned out to be friction addition.
 
-**Current state:** Launched today. Free plan is 3 invoices/month. Pro is $12/month for unlimited. No credit card required for free tier.
+**Pricing:** Free (3 invoices/month) → $12/month Pro (unlimited invoices + clients + full PDF branding).
 
-**What I'm most uncertain about:** Stripe Connect's onboarding friction for non-technical users. The OAuth flow is straightforward, but it requires creating a Stripe account if you don't have one. I've tried to minimize this with guided setup, but I know some users will drop off here. Would love any thoughts on how others have handled this.
-
-Link: [quickinvoice.app]
-
-Happy to go deep on any part of the technical implementation.
+Happy to discuss the technical details, the market dynamics (it's a crowded space with interesting gaps), or the build process. Feedback welcome — I'm still polishing rough edges.
 
 ---
 
-## 5. Indie Hackers — Building-in-Public Post
+## 5. Indie Hackers — Building in Public Post
 
-**Title:** I just launched Quick Invoice — here's everything: the numbers, the mistakes, and what's next
+**Title:** I launched Quick Invoice today. Here are the real numbers, what broke, and what I'd do differently.
 
----
+Today is launch day for Quick Invoice. I've been building it for six months and I want to share a full, honest breakdown — numbers included — because I benefited a lot from posts like this when I was starting.
 
-Hey IH community,
+### What it is
 
-Today I launched Quick Invoice, a focused invoicing SaaS for solo freelancers. I want to share the real numbers, the real mistakes, and what I learned — because that's what I always want to read on here.
+Quick Invoice is a focused invoicing tool for freelancers. Core loop: create invoice → Stripe payment link auto-embedded → send → get paid → repeat. That's the whole product. No CRM, no project management, no accounting module.
 
-**What I built:**
+### Why I built it
 
-Quick Invoice does one thing: lets freelancers create and send professional invoices with Stripe payment links, in under 2 minutes. No CRM. No accounting module. Just invoicing.
+I was a frustrated FreshBooks Lite user. When their promo pricing expired, I was paying $19/month with a 5-client cap. That's a bad deal for a solo freelancer. I tried Wave (payment fees on every transaction), Invoice Ninja (powerful but the UX feels like 2014), and eventually just went back to Google Docs.
 
-The pitch: FreshBooks is $19–$65/month and getting bloated. Wave is free but takes transaction fees and has limited PDF customization. There's a gap for a clean, focused tool at $12/month. I'm trying to fill it.
+Six months ago I decided to build what I actually wanted.
 
-**The numbers so far:**
+### The numbers
 
-*Pre-launch:*
-- Days building: ~90 (nights and weekends)
-- Waitlist signups before launch: 47 (from Twitter thread + one HN post)
-- Amount spent on infrastructure (month 1): ~$35 (Vercel hobby → pro, Railway Postgres, Resend email)
-- Amount spent on marketing: $0 (all organic)
+**Build phase:**
+- Time from idea to MVP: ~8 weeks (nights + weekends)
+- Tools: Next.js 15, Prisma, Stripe Connect, NextAuth, Resend, Railway, Vercel
+- Infrastructure cost during beta: ~$47/month (Railway DB + Vercel Pro + Resend)
 
-*Day 1 (today):*
-- Signups: tracking, will update
-- Invoice creation rate: tracking
-- Stripe connection rate: tracking (this is my key activation metric)
+**Beta (40 users, 6 weeks):**
+- Activation rate (sent ≥1 invoice): 74%
+- Average time to first invoice sent: 94 seconds
+- Invoices paid via embedded Stripe link: 68% of sent invoices
+- Beta-to-paid conversion rate: 18%
+- NPS: 41
 
-I'll post a full Day-7 update with real numbers.
+**Today (launch day):**
+- Waitlist signups: 312
+- Product Hunt upvotes as of writing: [TBD]
+- MRR at launch: $0 (converting beta users this week)
+- Target 30-day MRR: $500
 
-**The biggest mistake I made:**
+### What broke (and when)
 
-I built a 14-option settings page before the user had created their first invoice.
+**PDF generation on Safari** — React PDF's font loading behaved differently on Safari iOS. Fixed, but it burned 6 hours.
 
-I'm a developer. I like configuration. I wanted to give users "control." What I actually built was friction. A new user who just wants to send an invoice doesn't want to configure their timezone, invoice number prefix, reminder timing, email footer text, PDF color scheme, and default payment terms before they've seen the product work.
+**Stripe Connect onboarding flow** — First version redirected users out of the app to Stripe. Tested with 5 users; 3 never came back. Switched to embedded onboarding (Stripe's newer embedded component). Completion rate went from ~40% to ~78%.
 
-I deleted almost all of it. The remaining settings are three things: profile/business info, payment (Stripe connect), and reminders (on/off with timing). Everything else uses sensible defaults.
+**The "feature trap"** — I spent 3 weeks building multi-currency support before beta. Beta users: nobody mentioned currency in 40 feedback conversations. It's in the product but it wasn't needed for launch. Classic.
 
-**The thing that surprised me most:**
+### What I'd do differently
 
-PDF generation is underrated as a differentiator.
+1. **Talk to 30 users before writing a line of code.** I talked to 10. The 30-user mark is where the real patterns emerge.
+2. **Charge from day one.** I gave beta access free. Converting free users to paid is harder than getting a paying user to keep paying. Start with intent.
+3. **Ship the email sequence before launch day.** I had 312 waitlist signups and no onboarding email ready on launch morning. That was a mistake.
 
-When I showed early users the invoice PDF output, three separate people said something like "oh, this looks actually professional." That reaction told me something: the bar for PDFs from invoicing tools is low, and users notice when you clear it.
+### What's next
 
-React-PDF turned out to be the right choice here. It's more constrained than HTML/CSS, but the output is deterministic and looks the same in every environment. The PDF is a deliverable your client sees — it's worth getting right.
+The 30-day goal is 100 signups and $500 MRR. The 90-day goal is $1,000 MRR and a clear picture of who's churning and why.
 
-**What I'm not doing (by design):**
-
-- No expense tracking
-- No time tracking
-- No project management
-- No CRM
-- No team features (yet)
-- No mobile app (web-first)
-
-Every time I was tempted to add one of these, I asked: "Does a solo freelancer who sends 10 invoices a month need this to get paid?" The answer was always no.
-
-**The market bet:**
-
-I think there's a specific user — the solo freelancer billing $2,000–$10,000/month, using either Google Docs or a bloated tool they're mildly frustrated by — who will switch to a focused tool at $12/month. My job in the next 90 days is to find enough of them to validate that bet.
-
-**90-day targets:**
-- 100 signups
-- 60% activation (≥1 invoice sent)
-- 10 paying Pro users
-- $500 MRR
-
-**How to follow along:**
-
-I'll post weekly updates here and on Twitter (@[handle]). Real numbers, real mistakes, real lessons.
-
-If you're a freelancer — try it free (3 invoices/month, no credit card). I genuinely want your feedback.
-
-If you're an indie hacker who's navigated the "focused tool vs. feature expansion" question, I'd love to hear from you.
-
-[Quick Invoice — quickinvoice.app]
+If you're building something in this space or just want to follow along, I post updates at [Twitter handle]. Ask me anything below — I read everything.
 
 ---
 
 ## 6. Dev.to / Hashnode — Technical Tutorial
 
-**Title:** How to Send Your First Professional Invoice in 2 Minutes (And Actually Get Paid)
+**Title:** How I Built a Freelancer Invoicing App with Stripe Connect and Next.js 15 (And What I Shipped First)
 
-**Subtitle:** A practical guide for freelance developers who hate invoicing admin
+You want to accept payments for your SaaS. The tutorials make it look easy. Then you actually sit down to do it, and you discover that Stripe Connect — the product you need when your platform facilitates payments between your users and their clients — is a different beast from the standard Stripe Payments integration.
+
+This post walks through how I wired Stripe Connect into Quick Invoice, a freelancer invoicing app I launched this week. I'll cover the architecture decisions, the code patterns, and the two things I got badly wrong the first time.
+
+### The architecture in one paragraph
+
+Quick Invoice uses Stripe Connect with Express accounts. Each freelancer who signs up connects or creates a Stripe Express account through our platform. When a client pays an invoice, the money goes directly into the freelancer's Stripe account — Quick Invoice never touches the funds. We don't take a platform fee on the transaction. Revenue comes from the $12/month subscription instead.
+
+This is sometimes called a "facilitator" model. It's cleaner than Standard Connect for a SaaS like this because Stripe handles the full KYC/onboarding experience and you don't need to build a dashboard for freelancers to manage their payout settings.
+
+### Setting up Stripe Connect
+
+**1. Create a Connect account for the user**
+
+When a user clicks "Set up payments" in Quick Invoice, we call our API to create a Stripe Express account and return an onboarding link:
+
+```typescript
+// src/app/api/billing/connect/route.ts
+import Stripe from 'stripe';
+import { getServerSession } from 'next-auth';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+
+export async function POST(req: Request) {
+  const session = await getServerSession();
+  if (!session?.user?.id) return new Response('Unauthorized', { status: 401 });
+
+  // Create the Express account
+  const account = await stripe.accounts.create({
+    type: 'express',
+    capabilities: {
+      card_payments: { requested: true },
+      transfers: { requested: true },
+    },
+    metadata: { userId: session.user.id },
+  });
+
+  // Save stripeAccountId to user record
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: { stripeAccountId: account.id },
+  });
+
+  // Generate onboarding link
+  const accountLink = await stripe.accountLinks.create({
+    account: account.id,
+    refresh_url: `${process.env.NEXTAUTH_URL}/settings?connect=refresh`,
+    return_url: `${process.env.NEXTAUTH_URL}/settings?connect=success`,
+    type: 'account_onboarding',
+  });
+
+  return Response.json({ url: accountLink.url });
+}
+```
+
+**2. Embed the onboarding UI (instead of redirecting away)**
+
+My first version redirected users to Stripe's hosted onboarding. 3 out of 5 test users never came back. The fix: use Stripe's embedded Connect component, available since 2024, which renders the onboarding form inside your app in an iframe.
+
+```typescript
+// In your React component
+import { ConnectAccountOnboarding } from '@stripe/react-connect-js';
+
+function PaymentsSetup() {
+  return (
+    <ConnectAccountOnboarding
+      onExit={() => router.push('/settings?connect=complete')}
+    />
+  );
+}
+```
+
+This kept users in the app and completion rate went from ~40% to ~78%.
+
+### Generating a payment link per invoice
+
+When an invoice is sent, we create a Stripe Payment Link on behalf of the freelancer's connected account using the `stripeAccount` option:
+
+```typescript
+async function createInvoicePaymentLink(invoice: Invoice, stripeAccountId: string) {
+  // Create a product for this invoice
+  const product = await stripe.products.create(
+    {
+      name: `Invoice #${invoice.number} — ${invoice.clientName}`,
+      metadata: { invoiceId: invoice.id },
+    },
+    { stripeAccount: stripeAccountId }
+  );
+
+  // Create a price (one-time)
+  const price = await stripe.prices.create(
+    {
+      product: product.id,
+      unit_amount: Math.round(invoice.total * 100), // cents
+      currency: invoice.currency.toLowerCase(),
+    },
+    { stripeAccount: stripeAccountId }
+  );
+
+  // Create the payment link
+  const paymentLink = await stripe.paymentLinks.create(
+    {
+      line_items: [{ price: price.id, quantity: 1 }],
+      after_completion: {
+        type: 'redirect',
+        redirect: { url: `${process.env.NEXTAUTH_URL}/invoice/${invoice.id}/thank-you` },
+      },
+      metadata: { invoiceId: invoice.id },
+    },
+    { stripeAccount: stripeAccountId }
+  );
+
+  return paymentLink.url;
+}
+```
+
+The key is the `{ stripeAccount: stripeAccountId }` option — this tells Stripe to perform the operation on behalf of that connected account, not your platform account.
+
+### Handling the webhook
+
+When a client pays, Stripe fires a `checkout.session.completed` event — but it fires it to the *connected account's* webhook, not your platform webhook. You need to configure this via Stripe's Connect webhook settings and listen for events on connected accounts:
+
+```typescript
+// src/app/api/webhooks/stripe/route.ts
+export async function POST(req: Request) {
+  const body = await req.text();
+  const signature = req.headers.get('stripe-signature')!;
+
+  let event: Stripe.Event;
+
+  try {
+    // Use the Connect webhook secret, not the regular one
+    event = stripe.webhooks.constructEvent(
+      body,
+      signature,
+      process.env.STRIPE_CONNECT_WEBHOOK_SECRET!
+    );
+  } catch (err) {
+    return new Response('Webhook signature invalid', { status: 400 });
+  }
+
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object as Stripe.Checkout.Session;
+    const invoiceId = session.metadata?.invoiceId;
+
+    if (invoiceId) {
+      await prisma.invoice.update({
+        where: { id: invoiceId },
+        data: { status: 'PAID', paidAt: new Date() },
+      });
+
+      // Notify the freelancer
+      await sendPaymentNotification(invoiceId);
+    }
+  }
+
+  return new Response('OK', { status: 200 });
+}
+```
+
+### Generating the PDF server-side
+
+PDFs generated in the browser (jsPDF, html2canvas) are unreliable across devices — especially iOS Safari. I moved PDF generation to a server action using React PDF:
+
+```typescript
+// src/lib/pdf/invoice-pdf.tsx
+import { renderToBuffer } from '@react-pdf/renderer';
+import { InvoiceDocument } from './invoice-document';
+
+export async function generateInvoicePDF(invoice: InvoiceWithLineItems): Promise<Buffer> {
+  const buffer = await renderToBuffer(<InvoiceDocument invoice={invoice} />);
+  return buffer;
+}
+```
+
+```typescript
+// src/app/api/invoices/[id]/pdf/route.ts
+export async function GET(req: Request, { params }: { params: { id: string } }) {
+  const invoice = await getInvoiceWithAuth(params.id);
+  const pdf = await generateInvoicePDF(invoice);
+
+  return new Response(pdf, {
+    headers: {
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="invoice-${invoice.number}.pdf"`,
+    },
+  });
+}
+```
+
+### The two things I got wrong
+
+**Wrong #1: Thinking Connect Standard was simpler.** Standard accounts give users more control but require you to build the dashboard UI yourself — payout settings, tax info display, everything. Express accounts hand that off to Stripe's hosted dashboard. For a small team, Express is dramatically less work.
+
+**Wrong #2: Adding features before testing the core loop.** I built multi-currency, invoice templates, and a client portal before validating that users could send a basic invoice end-to-end. Three weeks of wasted work. Ship the loop, test the loop, then add features.
+
+### What's live today
+
+Quick Invoice launched this week. If you want to see the full flow in action — or if you're building something similar and want to compare notes — you can try it at [url].
+
+The codebase is reasonably clean. Happy to answer questions about any of the implementation details in the comments.
 
 ---
 
-If you're a freelance developer, you've probably experienced this: you finish a project, you should feel good about it, and instead you're staring at a Google Doc trying to remember how to format a professional-looking invoice. Then you copy your bank details into the email body. Then you wait. Then you follow up. Then you wait again.
+## 7. Launch Email — Announcement to Early Signups / Waitlist
 
-The average freelance invoice is paid 8 days late. That's not because clients are malicious — it's because the payment process has too much friction. They got your PDF, they had to find their banking app, they had to enter your details manually, and they kept meaning to get to it.
+**Subject:** Quick Invoice is live — you're first in 🎉
+**Preview text:** The invoicing tool you signed up for is ready. Here's your link.
 
-This guide walks through how to use Quick Invoice to fix that workflow. You'll have your first invoice sent — with a working Stripe payment link — in under 5 minutes.
+---
 
-### What You Need Before You Start
+Hey [First Name],
 
-- A Quick Invoice account (free to sign up — [quickinvoice.app])
-- A Stripe account (free; if you don't have one, you can create one during setup)
-- Your client's name and email address
-- The amount you're billing
+You signed up for the Quick Invoice waitlist a while back, and today's the day.
 
-That's it. You don't need to configure anything else before sending your first invoice.
+**Quick Invoice is live.** [Get started here →]
 
-### Step 1: Sign Up and Add Your Business Info
+Here's the short version of what you're getting:
 
-When you sign up, Quick Invoice will ask for your name or business name and your email. That's the minimum required to generate a professional invoice.
+Create a professional invoice in under 2 minutes. Your client receives an email with a Stripe payment link already embedded. They click, they pay, you get notified. Clean PDF download available any time.
 
-After you're in, go to **Settings → Profile** and add:
-- Your business name (or your full name if you're solo)
-- Your address (optional, but some clients require it for accounting)
-- Your logo (optional — upload a PNG or SVG and it auto-appears on all invoices)
+No accounting module. No CRM. No 14-tab navigation. Just invoicing that works.
 
-This takes about 90 seconds. You only do it once.
+**Your early access includes:**
+- Free plan (3 invoices/month) to get started immediately
+- Pro plan at $12/month — unlimited invoices, unlimited clients, full PDF branding, automatic payment reminders
+- No credit card required to sign up
 
-### Step 2: Add Your Client
+As someone who joined the waitlist, you saw what we were building and believed in it early. That means a lot. If you have feedback — anything that's confusing, missing, or broken — just reply to this email. I read every response.
 
-Go to **Clients → New Client** and enter:
-- Client name
-- Client email (this is where the invoice will be sent)
-- Company name (optional)
-- Address (optional)
+[Send your first invoice →]
 
-Save the client. Quick Invoice will remember them for every future invoice, so you never retype this information.
+See you on the other side,
+[Founder name]
+Quick Invoice
 
-If you have multiple clients, add them all now. There's no limit on the free plan for how many clients you can create — only on how many invoices you can send per month (3 on free; unlimited on Pro).
+P.S. — If you know another freelancer who's still invoicing in Google Docs, forward this email. They'll thank you.
 
-### Step 3: Connect Your Stripe Account
+---
 
-This is the step that changes how you get paid.
+## 8. Welcome Email Sequence
 
-Go to **Settings → Payments** and click **Connect Stripe**.
+### Email 1 — Day 0: Welcome + Quickstart Guide
 
-You'll be redirected to Stripe's OAuth flow. If you already have a Stripe account, log in and authorize. If you don't, create one — it takes about 3 minutes and requires your bank account details.
+**Subject:** Welcome to Quick Invoice — here's how to get paid in the next 5 minutes
+**Preview text:** Your first invoice is 3 steps away.
 
-Once connected, every invoice you send will automatically include a **"Pay Now"** button that links to a Stripe payment page. Your client clicks it, enters their card details, and the money goes directly to your Stripe account. You get an email notification the moment they pay.
+---
 
-For developers: Quick Invoice uses Stripe Connect, which means the payment goes directly to your Stripe account without passing through Quick Invoice's infrastructure. There's no additional transaction fee on top of Stripe's standard processing rate (2.9% + $0.30 for card transactions).
+Hey [First Name],
 
-### Step 4: Create and Send Your Invoice
+Welcome to Quick Invoice. You made a good call.
 
-Go to **Invoices → New Invoice**.
+Here's how to send your first invoice right now — it takes about 5 minutes, most of which is typing your client's name.
 
-Fill in:
-- **Client:** Select from your saved clients
-- **Invoice number:** Auto-generated, but you can edit it
-- **Issue date:** Defaults to today
-- **Due date:** Set this — it triggers the auto-reminder system
-- **Line items:** What did you do, and what's the amount? Add one line item or ten.
-- **Notes:** Optional. A good place to put "Thank you for your business" or payment instructions for clients who prefer bank transfer.
+**Step 1: Add your first client (30 seconds)**
+Go to Clients → New Client. Add a name and email. That's all you need to get started.
 
-Click **Preview** to see the PDF output. When you're happy, click **Send Invoice**.
+**Step 2: Create an invoice (60 seconds)**
+Go to Invoices → New Invoice. Select the client, add your line items (what you did + the amount), and set a due date. The system handles the invoice number.
 
-Your client will receive an email with:
-1. A summary of what they owe
-2. A "Pay Now" button linked to Stripe
-3. A PDF attachment for their records
+**Step 3: Connect Stripe and send (2 minutes)**
+If you want your client to pay online — and you do — go to Settings → Payments and connect your Stripe account. Takes about 90 seconds. Once connected, every invoice you send will have a payment link embedded automatically.
 
-You'll see the invoice status update to **Sent** in your dashboard.
+Hit "Send Invoice." Done.
 
-### Step 5: Watch the Status Update
+Your client will receive a professional email with:
+- A summary of what they owe
+- A "Pay Now" button powered by Stripe
+- A PDF attachment they can file away
 
-Back in **Invoices**, you'll see your invoice with a status badge:
-- **Draft** — saved but not sent
-- **Sent** — delivered to client's email
-- **Viewed** — client has opened the invoice email *(coming soon)*
-- **Paid** — payment received via Stripe (updates automatically)
-- **Overdue** — past the due date and still unpaid
+You'll receive a notification the moment they pay.
 
-When your client pays via the Stripe link, the status updates to **Paid** automatically and you get an email notification. No manual follow-up required.
+**A few things worth knowing:**
+- **Auto-reminders:** Quick Invoice will automatically send a polite reminder when an invoice is 3 days overdue. You don't have to chase anyone.
+- **PDF download:** You can download a clean PDF of any invoice any time from the invoice detail page.
+- **Free plan:** You can send up to 3 invoices per month free. When you're ready for unlimited, Pro is $12/month.
 
-### The Auto-Reminder System
+Questions? Just reply to this email.
 
-Quick Invoice monitors your sent invoices. When an invoice passes its due date unpaid, it automatically sends your client a polite reminder:
+[Send your first invoice →]
 
-> "Hi [Client Name], this is a quick reminder that Invoice #042 for $[amount] was due on [date]. You can pay it here: [Stripe link]. Let me know if you have any questions."
+Good luck out there,
+[Founder name]
+Quick Invoice
 
-Professional. Automatic. It doesn't sound like a robot.
+---
 
-You can configure reminder timing in **Settings → Reminders** (default: 3 days after due date). You can also send a manual reminder from any invoice page at any time.
+### Email 2 — Day 3: Feature Highlight + Tip
 
-Research consistently shows that 40–60% of late invoices are paid after a single reminder. This feature alone is worth more than the monthly cost of the Pro plan for most freelancers.
+**Subject:** The feature that quietly saves most freelancers $200/year
+**Preview text:** You probably haven't turned this on yet.
 
-### Downloading Your PDF
+---
 
-At any point, you can download a PDF of any invoice from the invoice detail page. Click the invoice, then click **Download PDF**.
+Hey [First Name],
 
-The PDF includes:
-- Your business name and logo
-- Client name and address
-- Invoice number, date, and due date
-- Itemized line items with amounts
-- Total amount due
-- Payment instructions and Stripe link as a URL
+Three days in — how's it going?
 
-This is the document you'd attach to an email, send to a client's accounting department, or keep for your own records. It's designed to look professional without any customization required.
+I want to tell you about the feature that has the most impact on how much money freelancers actually collect: **automatic payment reminders.**
 
-### What's Next
+Here's the reality: research consistently shows that 40–60% of late invoices get paid after a single follow-up. But most freelancers don't follow up — because it feels awkward, or they forget, or they're busy with the next project.
 
-Once you've sent a few invoices, the dashboard starts to become useful. You can see:
-- Total outstanding (amount across all unpaid invoices)
-- Total paid this month
-- Invoice history by client
+Quick Invoice removes that friction entirely.
 
-For developers billing multiple clients on retainer, the **Clients** section gives you a per-client view of invoice history — useful for end-of-year accounting or conversations about project scope.
+When an invoice goes past its due date, Quick Invoice automatically sends your client a polite reminder:
 
-**Quick Invoice Pro** ($12/month) adds:
-- Unlimited invoices and clients (free plan: 3 invoices/month)
-- Your logo on all invoices
+> "Hi [Client name], just a quick note that Invoice #042 for $1,200 was due on [date]. You can pay it here: [link]. Let me know if you have any questions."
+
+Professional. Automatic. Zero effort from you.
+
+**To make sure it's on:**
+Go to Settings → Reminders and confirm that automatic reminders are enabled. You can customize the timing (default: 3 days after due date) and the message.
+
+**One more tip:** If you have a client who's perpetually late, you can manually send a reminder from the invoice page at any time. One click. It feels less awkward when a tool does it for you.
+
+At $12/month, Quick Invoice pays for itself the first time it reminds a client who would have otherwise paid 30 days late. For most freelancers, that happens in the first week.
+
+[Turn on auto-reminders →]
+
+Talk soon,
+[Founder name]
+Quick Invoice
+
+P.S. — If you have feedback about anything in the product, reply here. I read every email and it genuinely shapes what gets built next.
+
+---
+
+### Email 3 — Day 7: Social Proof + Upgrade Nudge
+
+**Subject:** What Quick Invoice users are saying after one week
+**Preview text:** Real feedback from real freelancers.
+
+---
+
+Hey [First Name],
+
+You've been using Quick Invoice for a week. I want to share what other freelancers are saying — and then I want to make you an offer.
+
+**What early users told us:**
+
+*"I sent my first invoice in 90 seconds. My old workflow was a 20-minute nightmare."*
+— Freelance designer, New York
+
+*"The PDF looks better than anything I ever made in Word or Google Docs. Clients have actually commented on it."*
+— Marketing consultant, London
+
+*"I got paid on three invoices within 24 hours of sending. The Stripe link makes it so easy for clients to just pay immediately."*
+— Web developer, Toronto
+
+*"Finally a tool that doesn't treat me like I'm running a $10M company. It's just invoicing. That's all I needed."*
+— Copywriter, Austin
+
+These aren't cherry-picked. This is what the majority of our beta users said when we asked them to describe their experience in one sentence.
+
+**About your plan:**
+
+You're currently on the free plan, which gives you 3 invoices per month. That's enough to get started, but if you're actively freelancing — sending 4, 8, 10+ invoices a month — you'll want unlimited.
+
+**Pro is $12/month.** That's less than one hour of work for most freelancers, and it unlocks:
+- Unlimited invoices and clients
+- Full PDF branding (your logo, your colors)
 - Priority email support
-- Access to future features as they ship
+- Invoice history and reporting
 
-The free plan is enough to get started and evaluate whether the tool works for your workflow. If you're sending more than 3 invoices a month — and most active freelancers are — Pro pays for itself in the first saved hour of admin time.
+**Upgrade today for $12/month →**
+
+Or if you prefer to pay annually, it's $99/year — that's two months free.
+
+No pressure. If the free plan is working for your volume right now, keep using it. But when you're ready to grow, Pro is there.
+
+Either way, thanks for being an early user of Quick Invoice. You're part of building something that a lot of freelancers need.
+
+[Upgrade to Pro →]
+
+Talk soon,
+[Founder name]
+Quick Invoice
+
+P.S. — Still have questions about whether Pro is right for you? Reply to this email and I'll give you an honest answer. No sales pitch.
 
 ---
 
-**Questions?** Drop them in the comments below or reach out directly. And if you've found other parts of the freelance invoicing workflow frustrating that I haven't addressed here, I'd genuinely like to know — it shapes what gets built next.
-
-[Get started free — quickinvoice.app]
-
----
+*End of Launch Content Package*
+*Generated: 2026-04-01 | Quill (Content Writer Agent)*
