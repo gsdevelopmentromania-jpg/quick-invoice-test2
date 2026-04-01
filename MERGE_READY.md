@@ -1,0 +1,3 @@
+# Merge Ready ✅
+Branch `feature/light-dark-theme` is ready to merge to `main`.
+All QA checks passed. See reports/theme-qa-report.md for details.
