@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 export default function ResetPasswordPage(): React.ReactElement {
@@ -12,8 +12,15 @@ export default function ResetPasswordPage(): React.ReactElement {
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!token) {
+      setError("Invalid or missing reset token. Please request a new password reset.");
+    }
+  }, [token]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
@@ -24,8 +31,8 @@ export default function ResetPasswordPage(): React.ReactElement {
       return;
     }
 
-    if (!token) {
-      setError("Missing reset token. Please use the link from your email.");
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters.");
       return;
     }
 
@@ -38,51 +45,40 @@ export default function ResetPasswordPage(): React.ReactElement {
         body: JSON.stringify({ token, password }),
       });
 
-      const data = (await res.json()) as { error?: string; message?: string };
+      const data = (await res.json()) as { error?: string };
 
       if (!res.ok) {
-        setError(data.error ?? "Something went wrong. Please try again.");
-        setLoading(false);
+        setError(data.error ?? "Failed to reset password. Please try again.");
         return;
       }
 
-      router.push("/login?reset=1");
+      setSuccess(true);
+      setTimeout(() => router.push("/login"), 2000);
     } catch {
       setError("Something went wrong. Please try again.");
+    } finally {
       setLoading(false);
     }
   }
 
-  if (!token) {
+  if (success) {
     return (
-      <div className="text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+      <div className="flex flex-col items-center text-center">
+        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
           <svg
-            className="h-6 w-6 text-red-600"
+            className="h-6 w-6 text-green-600"
             fill="none"
             viewBox="0 0 24 24"
             strokeWidth={2}
             stroke="currentColor"
             aria-hidden="true"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
-            />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h2 className="text-xl font-bold text-gray-900">Invalid reset link</h2>
+        <h2 className="text-xl font-bold text-gray-900">Password reset!</h2>
         <p className="mt-2 text-sm text-gray-500">
-          This link is missing a reset token. Please use the link from your email.
-        </p>
-        <p className="mt-6 text-sm">
-          <Link
-            href="/forgot-password"
-            className="font-medium text-indigo-600 hover:text-indigo-700"
-          >
-            Request a new reset link
-          </Link>
+          Your password has been changed. Redirecting you to sign in&hellip;
         </p>
       </div>
     );
@@ -90,11 +86,9 @@ export default function ResetPasswordPage(): React.ReactElement {
 
   return (
     <div>
-      <div className="mb-8 text-center">
-        <h1 className="text-2xl font-bold text-gray-900">Set new password</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Choose a strong password for your account.
-        </p>
+      <div className="mb-8 flex flex-col items-center text-center">
+        <h1 className="text-2xl font-bold text-gray-900">Set a new password</h1>
+        <p className="mt-1 text-sm text-gray-500">Choose a strong password for your account.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4" noValidate>
@@ -140,7 +134,7 @@ export default function ResetPasswordPage(): React.ReactElement {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             className="block w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-            placeholder="••••••••"
+            placeholder="Repeat your password"
           />
         </div>
 
@@ -149,9 +143,10 @@ export default function ResetPasswordPage(): React.ReactElement {
           variant="primary"
           size="lg"
           loading={loading}
+          disabled={!token}
           className="w-full mt-2"
         >
-          Update password
+          Reset password
         </Button>
       </form>
 
