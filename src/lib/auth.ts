@@ -5,6 +5,7 @@ import GithubProvider from "next-auth/providers/github";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as NextAuthOptions["adapter"],
@@ -42,20 +43,39 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        // Rate limit: 5 attempts per email per 15 minutes
+        const rl = checkRateLimit(
+          `login:${credentials.email.toLowerCase()}`,
+          5,
+          15 * 60
+        );
+        if (!rl.success) {
+          throw new Error("TOO_MANY_ATTEMPTS");
+        }
+
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
+          where: { email: credentials.email.toLowerCase() },
         });
 
-        if (!user) {
+        if (!user || !user.passwordHash) {
           return null;
         }
 
-        // Note: passwordHash is not in the new schema.
-        // For credentials auth, a separate auth table or Supabase Auth is required.
-        // This provider is a placeholder — integrate Supabase Auth or add a
-        // passwordHash field to the User model for email/password sign-in.
-        console.warn("Credentials provider: passwordHash not in schema. Skipping password check.");
-        return null;
+        const isValid = await bcrypt.compare(
+          credentials.password,
+          user.passwordHash
+        );
+
+        if (!isValid) {
+          return null;
+        }
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.fullName ?? undefined,
+          image: user.logoUrl ?? undefined,
+        };
       },
     }),
   ],
