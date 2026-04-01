@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { SkeletonText, Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardBody } from "@/components/ui/card";
 
 export const metadata: Metadata = {
   title: "New Invoice",
@@ -8,50 +9,53 @@ export const metadata: Metadata = {
 
 export default function NewInvoicePage(): React.ReactElement {
   return (
-    <div className="p-6 space-y-5 max-w-3xl mx-auto">
-      {/* Page header */}
-      <div className="flex items-center gap-3">
+    <div className="p-6 max-w-3xl mx-auto">
+      {/* Back link + heading */}
+      <div className="mb-6">
         <Link
           href="/invoices"
-          className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors"
-          aria-label="Back to invoices"
+          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 mb-3"
         >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
+          <svg
+            className="h-4 w-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={2}
+            stroke="currentColor"
+            aria-hidden="true"
+          >
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
+          Back to invoices
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900">New Invoice</h1>
+        <h1 className="text-2xl font-semibold text-gray-900">New Invoice</h1>
+        <p className="mt-1 text-sm text-gray-500">
+          Fill in the details to create and send an invoice.
+        </p>
       </div>
 
-      {/* Form placeholder — implementation in feature task */}
-      <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-4" aria-label="Invoice form (coming soon)">
-        <p className="text-xs font-medium uppercase tracking-wider text-gray-400">Bill to</p>
-        <Skeleton className="h-9 w-full" />
+      {/* Placeholder card */}
+      <Card>
+        <CardHeader>
+          <h2 className="text-base font-semibold text-gray-900">Invoice details</h2>
+        </CardHeader>
+        <CardBody>
+          <p className="text-sm text-gray-500">
+            The invoice creation form will be built in the next feature task.
+          </p>
+        </CardBody>
+      </Card>
 
-        <div className="grid grid-cols-2 gap-4 pt-2">
-          <div className="space-y-1">
-            <SkeletonText className="w-20 h-3" />
-            <Skeleton className="h-9 w-full" />
-          </div>
-          <div className="space-y-1">
-            <SkeletonText className="w-20 h-3" />
-            <Skeleton className="h-9 w-full" />
-          </div>
-        </div>
-
-        <div className="pt-2 border-t border-gray-100">
-          <p className="text-xs font-medium uppercase tracking-wider text-gray-400 mb-3">Line Items</p>
-          <div className="space-y-2">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-          </div>
-        </div>
-
-        <div className="pt-2 border-t border-gray-100 flex justify-end gap-3">
-          <Skeleton className="h-9 w-20" />
-          <Skeleton className="h-9 w-28" />
-        </div>
+      {/* Action row */}
+      <div className="mt-6 flex justify-end gap-3">
+        <Link href="/invoices">
+          <Button variant="outline" size="md">
+            Cancel
+          </Button>
+        </Link>
+        <Button variant="primary" size="md" disabled>
+          Send Invoice
+        </Button>
       </div>
     </div>
   );
