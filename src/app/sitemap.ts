@@ -1,9 +1,18 @@
 import type { MetadataRoute } from "next";
+import { getAllPosts } from "@/lib/blog";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://quickinvoice.app";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
+  const posts = getAllPosts();
+
+  const blogEntries: MetadataRoute.Sitemap = posts.map((post) => ({
+    url: `${BASE_URL}/blog/${post.slug}`,
+    lastModified: new Date(post.updatedAt ?? post.publishedAt),
+    changeFrequency: "monthly" as const,
+    priority: 0.8,
+  }));
 
   return [
     {
@@ -24,12 +33,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly",
       priority: 0.8,
     },
-    {
-      url: `${BASE_URL}/blog/how-to-invoice-clients-as-a-freelancer`,
-      lastModified: new Date("2026-04-01"),
-      changeFrequency: "monthly",
-      priority: 0.8,
-    },
+    ...blogEntries,
     {
       url: `${BASE_URL}/login`,
       lastModified: now,
