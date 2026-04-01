@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardHeader, CardBody, CardFooter } from "@/components/ui/card";
-import { PLAN_CONFIGS } from "@/lib/billing";
+import { PLAN_CONFIGS } from "@/lib/plans";
 import type { SubscriptionDetails } from "@/app/api/billing/subscription/route";
 
 type Tab = "profile" | "notifications" | "billing";
@@ -309,7 +309,7 @@ function UsageBar({
   label: string;
 }): React.ReactElement {
   const pct = limit === null ? 0 : Math.min(100, Math.round((used / limit) * 100));
-  const displayLimit = limit === null ? "∞" : String(limit);
+  const displayLimit = limit === null ? "\u221e" : String(limit);
   const barColor = pct >= 90 ? "bg-red-500" : pct >= 70 ? "bg-yellow-400" : "bg-indigo-600";
 
   return (
@@ -494,8 +494,8 @@ function BillingTab(): React.ReactElement {
           role="alert"
           className="rounded-lg border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-800"
         >
-          ⚠️ Your last payment failed. Please update your payment method to avoid service
-          interruption.{" "}
+          {"\u26a0\ufe0f"} Your last payment failed. Please update your payment method to avoid
+          service interruption.{" "}
           <button
             onClick={() => void handleManageBilling()}
             className="font-medium underline hover:no-underline"
@@ -665,7 +665,7 @@ function BillingTab(): React.ReactElement {
                 loading={actionLoading}
                 onClick={() => void handleUpgrade("PRO")}
               >
-                Start 14-day free trial — ${proConfig.monthlyPriceUsd}/mo after
+                Start 14-day free trial &mdash; ${proConfig.monthlyPriceUsd}/mo after
               </Button>
               <p className="text-center text-xs text-gray-400">No credit card required</p>
             </div>
