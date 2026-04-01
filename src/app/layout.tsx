@@ -127,7 +127,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }): React.ReactElement {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" className={inter.variable} suppressHydrationWarning>
       <body className="font-sans antialiased">
         <JsonLd data={[organizationSchema, webSiteSchema, softwareSchema]} />
         <Providers>{children}</Providers>
