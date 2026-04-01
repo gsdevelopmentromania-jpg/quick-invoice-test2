@@ -13,6 +13,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Full history required for Sentry release commit tracking
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -31,6 +34,7 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Deploy to Vercel
+        id: vercel
         uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
@@ -38,10 +42,25 @@ jobs:
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           vercel-args: "--prod"
 
+      - name: Create Sentry release
+        if: ${{ secrets.SENTRY_AUTH_TOKEN != '' }}
+        uses: getsentry/action-release@v3
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+        with:
+          environment: production
+          # Tag the release with the short SHA so it matches source maps
+          version: ${{ github.sha }}
+
 # ─────────────────────────────────────────
 # Required GitHub Secrets:
 #   DATABASE_URL         — Production PostgreSQL URL
 #   VERCEL_TOKEN         — Vercel API token
 #   VERCEL_ORG_ID        — Vercel org/team ID
 #   VERCEL_PROJECT_ID    — Vercel project ID
+#   SENTRY_AUTH_TOKEN    — Sentry auth token (project:releases scope)
+#   SENTRY_ORG           — Sentry organisation slug
+#   SENTRY_PROJECT       — Sentry project slug
 # ─────────────────────────────────────────
