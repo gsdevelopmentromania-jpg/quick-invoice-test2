@@ -48,7 +48,7 @@ const faqs: FaqItem[] = [
 function ChevronIcon({ open }: { open: boolean }): React.ReactElement {
   return (
     <svg
-      className={`w-5 h-5 text-gray-500 flex-shrink-0 transition-transform duration-200 ${
+      className={`w-5 h-5 text-gray-500 dark:text-gray-400 flex-shrink-0 transition-transform duration-200 ${
         open ? "rotate-180" : "rotate-0"
       }`}
       viewBox="0 0 20 20"
@@ -76,7 +76,7 @@ function FaqItem({
   const buttonId = `faq-button-${index}`;
 
   return (
-    <div className="border-b border-gray-200 last:border-b-0">
+    <div className="border-b border-gray-200 dark:border-gray-700 last:border-b-0">
       <button
         id={buttonId}
         type="button"
@@ -85,7 +85,7 @@ function FaqItem({
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between gap-4 py-5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 rounded"
       >
-        <span className="text-base font-semibold text-gray-900">
+        <span className="text-base font-semibold text-gray-900 dark:text-white">
           {item.question}
         </span>
         <ChevronIcon open={open} />
@@ -98,7 +98,7 @@ function FaqItem({
           open ? "max-h-96 pb-5" : "max-h-0"
         }`}
       >
-        <p className="text-gray-600 text-sm leading-relaxed">{item.answer}</p>
+        <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{item.answer}</p>
       </div>
     </div>
   );
@@ -106,21 +106,21 @@ function FaqItem({
 
 export function FaqSection(): React.ReactElement {
   return (
-    <section id="faq" className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
+    <section id="faq" className="py-24 px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-900">
       <div className="max-w-3xl mx-auto">
         {/* Heading */}
         <div className="text-center mb-14">
           <p className="text-sm font-semibold text-indigo-600 uppercase tracking-wide mb-3">
             FAQ
           </p>
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
             Frequently asked questions
           </h2>
         </div>
 
         {/* Accordion */}
         <div
-          className="divide-y divide-gray-200 border border-gray-200 rounded-2xl px-6"
+          className="divide-y divide-gray-200 dark:divide-gray-700 border border-gray-200 dark:border-gray-700 rounded-2xl px-6"
           role="list"
         >
           {faqs.map((faq, i) => (
@@ -131,7 +131,7 @@ export function FaqSection(): React.ReactElement {
         </div>
 
         {/* Contact CTA */}
-        <p className="text-center text-sm text-gray-500 mt-10">
+        <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-10">
           Still have questions?{" "}
           <a
             href="mailto:hello@quickinvoice.app"
