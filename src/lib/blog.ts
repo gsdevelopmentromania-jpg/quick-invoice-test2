@@ -13,6 +13,26 @@ export const BLOG_POSTS: BlogPost[] = [
     author: "Quick Invoice Team",
     featured: true,
   },
+  {
+    slug: "freelance-invoice-payment-terms",
+    title:
+      "Invoice Payment Terms for Freelancers: The Complete 2026 Guide",
+    description:
+      "Understand every invoice payment term — Net 30, Net 14, due on receipt, late fees, and deposits — and learn which terms actually get freelancers paid faster.",
+    publishedAt: "2026-04-01",
+    readingTimeMinutes: 9,
+    category: "Guides",
+    tags: [
+      "payment terms",
+      "invoicing",
+      "net 30",
+      "late fees",
+      "deposits",
+      "freelancing",
+    ],
+    author: "Quick Invoice Team",
+    featured: false,
+  },
 ];
 
 export function getPostBySlug(slug: string): BlogPost | undefined {
