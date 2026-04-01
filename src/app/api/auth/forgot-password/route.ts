@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { randomBytes } from "crypto";
 import prisma from "@/lib/prisma";
 import { sendPasswordResetEmail } from "@/lib/email";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
@@ -12,16 +13,15 @@ const forgotSchema = z.object({
 /**
  * POST /api/auth/forgot-password
  *
- * Generates a password-reset token, stores it in the DB, and emails the link.
- * Always returns 200 to prevent email enumeration attacks.
- * Rate limited to 3 attempts per email per 15 minutes.
+ * Sends a password reset email if the address exists.
+ * Always returns 200 to prevent user enumeration.
+ * Rate-limited to 3 requests per email per hour.
  */
 export async function POST(
   req: NextRequest
-): Promise<NextResponse<ApiResponse<null>>> {
-  // Rate limit by IP as a broad guard
+): Promise<NextResponse<ApiResponse<{ sent: boolean }>>> {
   const ip = getClientIp(req.headers);
-  const ipRl = checkRateLimit(`forgot-ip:${ip}`, 10, 15 * 60);
+  const ipRl = checkRateLimit(`forgot-ip:${ip}`, 10, 60 * 60);
   if (!ipRl.success) {
     return NextResponse.json(
       { error: "Too many requests. Please try again later." },
@@ -34,58 +34,50 @@ export async function POST(
 
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.errors[0]?.message ?? "Invalid input" },
+      { error: parsed.error.errors[0]?.message ?? "Invalid request" },
       { status: 400 }
     );
   }
 
   const email = parsed.data.email.toLowerCase();
 
-  // Rate limit per email: 3 attempts per 15 minutes
-  const emailRl = checkRateLimit(`forgot-email:${email}`, 3, 15 * 60);
+  // Rate limit per email address
+  const emailRl = checkRateLimit(`forgot-email:${email}`, 3, 60 * 60);
   if (!emailRl.success) {
-    // Return success-looking response to prevent timing attacks, but still 429
-    return NextResponse.json({ data: null, message: "If that email exists, a reset link has been sent." }, { status: 200 });
+    // Return success to avoid enumeration while still rate limiting
+    return NextResponse.json({ data: { sent: true } }, { status: 200 });
   }
 
   const user = await prisma.user.findUnique({ where: { email } });
 
-  // Always respond with success to prevent email enumeration
-  if (!user) {
-    return NextResponse.json(
-      { data: null, message: "If that email exists, a reset link has been sent." },
-      { status: 200 }
-    );
+  // Always succeed — do not reveal whether the email exists
+  if (!user || !user.passwordHash) {
+    return NextResponse.json({ data: { sent: true } }, { status: 200 });
   }
 
-  // Invalidate any existing unused tokens for this user
+  // Invalidate any existing unexpired tokens for this user
   await prisma.passwordResetToken.updateMany({
-    where: { userId: user.id, usedAt: null },
+    where: { userId: user.id, usedAt: null, expiresAt: { gt: new Date() } },
     data: { usedAt: new Date() },
   });
 
-  // Generate a cryptographically secure token
-  const rawToken = Array.from(crypto.getRandomValues(new Uint8Array(32)))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-
+  const token = randomBytes(32).toString("hex");
   const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
   await prisma.passwordResetToken.create({
     data: {
       userId: user.id,
-      token: rawToken,
+      token,
       expiresAt,
     },
   });
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-  const resetUrl = `${appUrl}/reset-password?token=${rawToken}`;
+  const resetUrl = `${appUrl}/reset-password?token=${token}`;
 
-  await sendPasswordResetEmail({ to: email, resetUrl });
+  sendPasswordResetEmail({ to: email, resetUrl }).catch((err: unknown) => {
+    console.error("Failed to send password reset email:", err);
+  });
 
-  return NextResponse.json(
-    { data: null, message: "If that email exists, a reset link has been sent." },
-    { status: 200 }
-  );
+  return NextResponse.json({ data: { sent: true } }, { status: 200 });
 }
