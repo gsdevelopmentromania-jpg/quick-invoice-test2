@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import type { ApiResponse, PaginatedResponse } from "@/types";
 import type { Client } from "@prisma/client";
+import { canCreateClient } from "@/lib/billing";
 
 const createClientSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -76,6 +77,7 @@ export async function GET(
 /**
  * POST /api/clients
  * Creates a new client for the authenticated user.
+ * Enforces plan-based client count limits.
  */
 export async function POST(
   req: NextRequest
@@ -90,6 +92,27 @@ export async function POST(
     const parsed = createClientSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json({ error: parsed.error.message }, { status: 400 });
+    }
+
+    // ── Feature gate: enforce client count limit ──────────────────────────
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { plan: true },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const allowed = await canCreateClient(session.user.id, user.plan);
+    if (!allowed) {
+      return NextResponse.json(
+        {
+          error:
+            "You have reached your client limit. Upgrade to Pro for unlimited clients.",
+        },
+        { status: 403 }
+      );
     }
 
     const client = await prisma.client.create({
