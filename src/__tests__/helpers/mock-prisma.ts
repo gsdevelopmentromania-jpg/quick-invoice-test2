@@ -40,6 +40,7 @@ const prismaMock = {
     findUnique: jest.fn(),
     create: jest.fn(),
     delete: jest.fn(),
+    deleteMany: jest.fn(),
   },
   passwordResetToken: {
     findUnique: jest.fn(),
@@ -83,6 +84,7 @@ export function resetPrismaMock() {
   prismaMock.verificationToken.findUnique.mockReset();
   prismaMock.verificationToken.create.mockReset();
   prismaMock.verificationToken.delete.mockReset();
+  prismaMock.verificationToken.deleteMany.mockReset();
   prismaMock.passwordResetToken.findUnique.mockReset();
   prismaMock.passwordResetToken.create.mockReset();
   prismaMock.passwordResetToken.update.mockReset();
