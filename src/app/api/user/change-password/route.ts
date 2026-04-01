@@ -8,19 +8,21 @@ import type { ApiResponse } from "@/types";
 
 const changePasswordSchema = z.object({
   currentPassword: z.string().min(1, "Current password is required"),
-  newPassword: z.string().min(8, "New password must be at least 8 characters"),
+  newPassword: z
+    .string()
+    .min(8, "New password must be at least 8 characters")
+    .max(128, "Password too long"),
 });
 
 /**
  * POST /api/user/change-password
  *
- * Allows an authenticated user to change their password.
+ * Changes the authenticated user's password.
  * Requires the current password for verification.
- * OAuth-only users (no passwordHash) receive a clear error.
  */
 export async function POST(
   req: NextRequest
-): Promise<NextResponse<ApiResponse<null>>> {
+): Promise<NextResponse<ApiResponse<{ changed: boolean }>>> {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -28,10 +30,9 @@ export async function POST(
 
   const body: unknown = await req.json();
   const parsed = changePasswordSchema.safeParse(body);
-
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.errors[0]?.message ?? "Invalid input" },
+      { error: parsed.error.errors[0]?.message ?? "Invalid request" },
       { status: 400 }
     );
   }
@@ -42,34 +43,24 @@ export async function POST(
     where: { id: session.user.id },
   });
 
-  if (!user) {
-    return NextResponse.json({ error: "User not found" }, { status: 404 });
-  }
-
-  if (!user.passwordHash) {
+  if (!user || !user.passwordHash) {
     return NextResponse.json(
-      { error: "Your account uses OAuth sign-in. Password change is not available." },
+      { error: "Password change is not available for OAuth accounts" },
       { status: 400 }
     );
   }
 
   const isValid = await bcrypt.compare(currentPassword, user.passwordHash);
   if (!isValid) {
-    return NextResponse.json(
-      { error: "Current password is incorrect." },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Current password is incorrect" }, { status: 400 });
   }
 
-  const newHash = await bcrypt.hash(newPassword, 12);
+  const passwordHash = await bcrypt.hash(newPassword, 12);
 
   await prisma.user.update({
     where: { id: session.user.id },
-    data: { passwordHash: newHash },
+    data: { passwordHash },
   });
 
-  return NextResponse.json(
-    { data: null, message: "Password changed successfully." },
-    { status: 200 }
-  );
+  return NextResponse.json({ data: { changed: true } }, { status: 200 });
 }
