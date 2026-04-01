@@ -63,8 +63,9 @@ export async function POST(
     data: { identifier: email, token, expires },
   });
 
+  // Point to the frontend verify-email page (which calls GET /api/auth/verify-email)
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-  const verificationUrl = `${appUrl}/api/auth/verify-email?token=${token}&email=${encodeURIComponent(email)}`;
+  const verificationUrl = `${appUrl}/verify-email?token=${token}&email=${encodeURIComponent(email)}`;
 
   sendEmailVerificationEmail({
     to: email,
