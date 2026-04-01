@@ -1,0 +1,64 @@
+version: "3.9"
+
+services:
+  # ── PostgreSQL database ──────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: quick_invoice_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: quick_invoice
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Next.js application ──────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        DATABASE_URL: postgresql://postgres:postgres@postgres:5432/quick_invoice
+        NEXTAUTH_SECRET: dev-secret-change-in-production
+        NEXTAUTH_URL: http://localhost:3000
+        NEXT_PUBLIC_APP_URL: http://localhost:3000
+    container_name: quick_invoice_app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/quick_invoice
+      NEXTAUTH_SECRET: dev-secret-change-in-production
+      NEXTAUTH_URL: http://localhost:3000
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-sk_test_placeholder}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-whsec_placeholder}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ── Stripe webhook forwarding (dev only) ─
+  stripe-cli:
+    image: stripe/stripe-cli:latest
+    container_name: quick_invoice_stripe
+    command: >
+      listen
+      --api-key ${STRIPE_SECRET_KEY:-sk_test_placeholder}
+      --forward-to http://app:3000/api/webhooks/stripe
+    environment:
+      STRIPE_API_KEY: ${STRIPE_SECRET_KEY:-sk_test_placeholder}
+    depends_on:
+      - app
+    profiles:
+      - stripe
+
+volumes:
+  postgres_data:
