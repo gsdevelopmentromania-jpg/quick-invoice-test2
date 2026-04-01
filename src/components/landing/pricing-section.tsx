@@ -97,7 +97,7 @@ function CheckIcon({ included }: { included: boolean }): React.ReactElement {
   }
   return (
     <svg
-      className="w-5 h-5 text-gray-300 flex-shrink-0"
+      className="w-5 h-5 text-gray-300 dark:text-gray-600 flex-shrink-0"
       viewBox="0 0 20 20"
       fill="currentColor"
       aria-hidden="true"
@@ -113,17 +113,17 @@ function CheckIcon({ included }: { included: boolean }): React.ReactElement {
 
 export function PricingSection(): React.ReactElement {
   return (
-    <section id="pricing" className="py-24 px-4 sm:px-6 lg:px-8 bg-gray-50">
+    <section id="pricing" className="py-24 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-950">
       <div className="max-w-6xl mx-auto">
         {/* Heading */}
         <div className="text-center mb-16">
           <p className="text-sm font-semibold text-indigo-600 uppercase tracking-wide mb-3">
             Pricing
           </p>
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
             Simple, transparent pricing
           </h2>
-          <p className="text-lg text-gray-600 max-w-xl mx-auto">
+          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-xl mx-auto">
             No hidden fees. No percentage cut on payments. Cancel any time.
           </p>
         </div>
@@ -135,8 +135,8 @@ export function PricingSection(): React.ReactElement {
               key={plan.name}
               className={`relative flex flex-col rounded-2xl p-8 ${
                 plan.highlighted
-                  ? "bg-indigo-600 text-white shadow-2xl shadow-indigo-200 ring-2 ring-indigo-600"
-                  : "bg-white border border-gray-200 shadow-sm"
+                  ? "bg-indigo-600 text-white shadow-2xl shadow-indigo-200 dark:shadow-indigo-900 ring-2 ring-indigo-600"
+                  : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm"
               }`}
             >
               {plan.badge && (
@@ -150,14 +150,14 @@ export function PricingSection(): React.ReactElement {
               <div className="mb-6">
                 <h3
                   className={`text-lg font-bold mb-1 ${
-                    plan.highlighted ? "text-white" : "text-gray-900"
+                    plan.highlighted ? "text-white" : "text-gray-900 dark:text-white"
                   }`}
                 >
                   {plan.name}
                 </h3>
                 <p
                   className={`text-sm mb-4 ${
-                    plan.highlighted ? "text-indigo-200" : "text-gray-500"
+                    plan.highlighted ? "text-indigo-200" : "text-gray-500 dark:text-gray-400"
                   }`}
                 >
                   {plan.description}
@@ -165,14 +165,14 @@ export function PricingSection(): React.ReactElement {
                 <div className="flex items-baseline gap-1">
                   <span
                     className={`text-4xl font-bold ${
-                      plan.highlighted ? "text-white" : "text-gray-900"
+                      plan.highlighted ? "text-white" : "text-gray-900 dark:text-white"
                     }`}
                   >
                     {plan.price}
                   </span>
                   <span
                     className={`text-sm ${
-                      plan.highlighted ? "text-indigo-200" : "text-gray-500"
+                      plan.highlighted ? "text-indigo-200" : "text-gray-500 dark:text-gray-400"
                     }`}
                   >
                     {plan.period}
@@ -202,8 +202,8 @@ export function PricingSection(): React.ReactElement {
                             ? "text-indigo-100"
                             : "text-indigo-300 line-through"
                           : feature.included
-                          ? "text-gray-700"
-                          : "text-gray-300 line-through"
+                          ? "text-gray-700 dark:text-gray-300"
+                          : "text-gray-300 dark:text-gray-600 line-through"
                       }`}
                     >
                       {feature.text}
@@ -216,7 +216,7 @@ export function PricingSection(): React.ReactElement {
         </div>
 
         {/* Money-back note */}
-        <p className="text-center text-sm text-gray-500 mt-10">
+        <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-10">
           All paid plans include a 14-day free trial. No credit card required to
           start.
         </p>
