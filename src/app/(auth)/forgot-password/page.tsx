@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 
 export default function ForgotPasswordPage(): React.ReactElement {
   const [email, setEmail] = useState("");
-  const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>): Promise<void> {
@@ -22,20 +22,13 @@ export default function ForgotPasswordPage(): React.ReactElement {
         body: JSON.stringify({ email }),
       });
 
-      const data = (await res.json()) as { error?: string; message?: string };
-
       if (res.status === 429) {
-        setError(data.error ?? "Too many requests. Please try again later.");
+        setError("Too many requests. Please wait a while before trying again.");
         setLoading(false);
         return;
       }
 
-      if (!res.ok) {
-        setError(data.error ?? "Something went wrong. Please try again.");
-        setLoading(false);
-        return;
-      }
-
+      // Always show success (prevent email enumeration)
       setSubmitted(true);
     } catch {
       setError("Something went wrong. Please try again.");
@@ -46,8 +39,8 @@ export default function ForgotPasswordPage(): React.ReactElement {
 
   if (submitted) {
     return (
-      <div className="text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
+      <div className="flex flex-col items-center text-center">
+        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
           <svg
             className="h-6 w-6 text-green-600"
             fill="none"
@@ -61,21 +54,22 @@ export default function ForgotPasswordPage(): React.ReactElement {
         </div>
         <h2 className="text-xl font-bold text-gray-900">Check your inbox</h2>
         <p className="mt-2 text-sm text-gray-500">
-          If an account exists for <strong>{email}</strong>, you&apos;ll receive a
-          password reset link within a few minutes.
+          If an account exists for <strong>{email}</strong>, we&apos;ve sent a password reset link.
+          It expires in 1 hour.
         </p>
-        <p className="mt-6 text-sm text-gray-500">
-          <Link href="/login" className="font-medium text-indigo-600 hover:text-indigo-700">
-            Back to sign in
-          </Link>
-        </p>
+        <Link
+          href="/login"
+          className="mt-6 text-sm font-medium text-indigo-600 hover:text-indigo-700"
+        >
+          Back to sign in
+        </Link>
       </div>
     );
   }
 
   return (
     <div>
-      <div className="mb-8 text-center">
+      <div className="mb-8 flex flex-col items-center text-center">
         <h1 className="text-2xl font-bold text-gray-900">Forgot your password?</h1>
         <p className="mt-1 text-sm text-gray-500">
           Enter your email and we&apos;ll send you a reset link.
@@ -120,9 +114,9 @@ export default function ForgotPasswordPage(): React.ReactElement {
       </form>
 
       <p className="mt-6 text-center text-sm text-gray-500">
-        Remember your password?{" "}
+        Remember it?{" "}
         <Link href="/login" className="font-medium text-indigo-600 hover:text-indigo-700">
-          Sign in
+          Back to sign in
         </Link>
       </p>
     </div>
