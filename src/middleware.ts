@@ -9,8 +9,7 @@ export default withAuth(
       pathname === "/login" ||
       pathname === "/register" ||
       pathname === "/forgot-password" ||
-      pathname.startsWith("/reset-password") ||
-      pathname.startsWith("/verify-email");
+      pathname === "/reset-password";
     const token = req.nextauth.token;
 
     // Redirect logged-in users away from auth pages
@@ -28,8 +27,7 @@ export default withAuth(
           pathname === "/login" ||
           pathname === "/register" ||
           pathname === "/forgot-password" ||
-          pathname.startsWith("/reset-password") ||
-          pathname.startsWith("/verify-email");
+          pathname === "/reset-password";
         // Auth pages are always accessible (redirect handled in middleware fn)
         if (isAuthPage) return true;
         return !!token;
@@ -44,9 +42,6 @@ export const config = {
     "/register",
     "/forgot-password",
     "/reset-password",
-    "/reset-password/:path*",
-    "/verify-email",
-    "/verify-email/:path*",
     "/dashboard/:path*",
     "/invoices/:path*",
     "/clients/:path*",
