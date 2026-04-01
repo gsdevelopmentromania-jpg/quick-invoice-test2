@@ -35,13 +35,18 @@ const prismaMock = {
     create: jest.fn(),
     update: jest.fn(),
     delete: jest.fn(),
-    updateMany: jest.fn(),
+  },
+  verificationToken: {
+    findUnique: jest.fn(),
+    create: jest.fn(),
+    delete: jest.fn(),
   },
   passwordResetToken: {
     findUnique: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
     updateMany: jest.fn(),
+    delete: jest.fn(),
   },
   $transaction: jest.fn().mockImplementation(
     (arg: ((tx: typeof prismaMock) => Promise<unknown>) | Array<Promise<unknown>>) => {
@@ -58,7 +63,6 @@ export function getPrismaMock() {
 }
 
 export function resetPrismaMock() {
-  // Reset all mocks between tests
   prismaMock.client.findFirst.mockReset();
   prismaMock.client.findMany.mockReset();
   prismaMock.client.count.mockReset();
@@ -76,11 +80,14 @@ export function resetPrismaMock() {
   prismaMock.user.create.mockReset();
   prismaMock.user.update.mockReset();
   prismaMock.user.delete.mockReset();
-  prismaMock.user.updateMany.mockReset();
+  prismaMock.verificationToken.findUnique.mockReset();
+  prismaMock.verificationToken.create.mockReset();
+  prismaMock.verificationToken.delete.mockReset();
   prismaMock.passwordResetToken.findUnique.mockReset();
   prismaMock.passwordResetToken.create.mockReset();
   prismaMock.passwordResetToken.update.mockReset();
   prismaMock.passwordResetToken.updateMany.mockReset();
+  prismaMock.passwordResetToken.delete.mockReset();
   prismaMock.$transaction.mockReset();
   prismaMock.$transaction.mockImplementation(
     (arg: ((tx: typeof prismaMock) => Promise<unknown>) | Array<Promise<unknown>>) => {
