@@ -42,17 +42,17 @@ const solutions = [
 
 export function SolutionSection(): React.ReactElement {
   return (
-    <section id="solution" className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+    <section id="solution" className="py-20 px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-900">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-16">
           <p className="text-sm font-semibold uppercase tracking-widest text-indigo-600 mb-3">
             How it works
           </p>
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
             From invoice to payment in three steps
           </h2>
-          <p className="text-lg text-gray-500 max-w-2xl mx-auto">
+          <p className="text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">
             Quick Invoice eliminates every friction point between finishing your work and getting paid.
           </p>
         </div>
@@ -61,7 +61,7 @@ export function SolutionSection(): React.ReactElement {
         <div className="relative">
           {/* Connector line (desktop) */}
           <div
-            className="hidden lg:block absolute top-14 left-1/2 -translate-x-1/2 w-2/3 h-0.5 bg-gradient-to-r from-indigo-100 via-indigo-300 to-indigo-100"
+            className="hidden lg:block absolute top-14 left-1/2 -translate-x-1/2 w-2/3 h-0.5 bg-gradient-to-r from-indigo-100 via-indigo-300 to-indigo-100 dark:from-indigo-900 dark:via-indigo-600 dark:to-indigo-900"
             aria-hidden="true"
           />
 
@@ -69,22 +69,22 @@ export function SolutionSection(): React.ReactElement {
             {solutions.map((solution) => (
               <div key={solution.id} className="relative flex flex-col items-center text-center">
                 {/* Step circle */}
-                <div className="relative z-10 flex items-center justify-center w-28 h-28 rounded-full bg-indigo-50 border-4 border-white shadow-md mb-6">
+                <div className="relative z-10 flex items-center justify-center w-28 h-28 rounded-full bg-indigo-50 dark:bg-indigo-900/40 border-4 border-white dark:border-gray-900 shadow-md mb-6">
                   <div className="flex items-center justify-center w-16 h-16 rounded-full bg-indigo-600 text-white">
                     {solution.icon}
                   </div>
-                  <span className="absolute -top-1 -right-1 flex items-center justify-center w-7 h-7 rounded-full bg-white border-2 border-indigo-200 text-xs font-bold text-indigo-600">
+                  <span className="absolute -top-1 -right-1 flex items-center justify-center w-7 h-7 rounded-full bg-white dark:bg-gray-800 border-2 border-indigo-200 dark:border-indigo-700 text-xs font-bold text-indigo-600">
                     {solution.step}
                   </span>
                 </div>
 
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{solution.title}</h3>
-                <p className="text-sm text-gray-500 leading-relaxed mb-4 max-w-xs">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{solution.title}</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-4 max-w-xs">
                   {solution.description}
                 </p>
 
                 {/* Solves badge */}
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800">
                   <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
                   </svg>
