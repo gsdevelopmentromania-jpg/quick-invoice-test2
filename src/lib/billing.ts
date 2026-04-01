@@ -1,113 +1,14 @@
 /**
- * Billing — plan configuration, feature gates, and usage helpers.
+ * Server-side billing helpers: feature gates, usage checks, Stripe customer management.
  * This module must only be imported from server-side code (API routes / server components).
+ * For static plan config (safe on client too), use @/lib/plans.
  */
 
 import { Plan } from "@prisma/client";
 import prisma from "@/lib/prisma";
 
-// ─── Plan definitions ──────────────────────────────────────────────────────
-
-export interface PlanLimits {
-  /** Max invoices creatable per calendar month. null = unlimited. */
-  invoicesPerMonth: number | null;
-  /** Max total active clients. null = unlimited. */
-  clients: number | null;
-}
-
-export interface PlanFeatures {
-  pdfDownloads: boolean;
-  customBranding: boolean;
-  paymentReminders: boolean;
-  /** Max team members. null = unlimited. */
-  maxTeamMembers: number | null;
-  prioritySupport: boolean;
-  trialDays: number;
-}
-
-export interface PlanConfig {
-  id: Plan;
-  name: string;
-  monthlyPriceUsd: number;
-  annualPriceUsd: number | null;
-  limits: PlanLimits;
-  features: PlanFeatures;
-  highlights: string[];
-}
-
-export const PLAN_CONFIGS: Record<Plan, PlanConfig> = {
-  FREE: {
-    id: "FREE",
-    name: "Free",
-    monthlyPriceUsd: 0,
-    annualPriceUsd: null,
-    limits: { invoicesPerMonth: 3, clients: 5 },
-    features: {
-      pdfDownloads: false,
-      customBranding: false,
-      paymentReminders: false,
-      maxTeamMembers: 1,
-      prioritySupport: false,
-      trialDays: 0,
-    },
-    highlights: [
-      "Up to 3 invoices / month",
-      "Up to 5 clients",
-      "Stripe payment links",
-      "Basic invoice templates",
-    ],
-  },
-  PRO: {
-    id: "PRO",
-    name: "Pro",
-    monthlyPriceUsd: 12,
-    annualPriceUsd: 99,
-    limits: { invoicesPerMonth: null, clients: null },
-    features: {
-      pdfDownloads: true,
-      customBranding: true,
-      paymentReminders: true,
-      maxTeamMembers: 1,
-      prioritySupport: true,
-      trialDays: 14,
-    },
-    highlights: [
-      "Unlimited invoices",
-      "Unlimited clients",
-      "PDF downloads",
-      "Custom branding & logo",
-      "Automated payment reminders",
-      "Priority support",
-    ],
-  },
-  TEAM: {
-    id: "TEAM",
-    name: "Enterprise",
-    monthlyPriceUsd: 29,
-    annualPriceUsd: 249,
-    limits: { invoicesPerMonth: null, clients: null },
-    features: {
-      pdfDownloads: true,
-      customBranding: true,
-      paymentReminders: true,
-      maxTeamMembers: null,
-      prioritySupport: true,
-      trialDays: 14,
-    },
-    highlights: [
-      "Everything in Pro",
-      "Unlimited team members",
-      "Team collaboration",
-      "Advanced analytics",
-      "Dedicated account manager",
-      "Custom integrations",
-    ],
-  },
-};
-
-export function getPlanConfig(plan: Plan): PlanConfig {
-  return PLAN_CONFIGS[plan];
-}
+export type { PlanLimits, PlanFeatures, PlanConfig } from "@/lib/plans";
+export { PLAN_CONFIGS, getPlanConfig } from "@/lib/plans";
 
 /** Return the Stripe Price ID for a given plan (server-side only). */
 export function getStripePriceId(plan: Plan): string | undefined {
@@ -129,6 +30,8 @@ export function planFromPriceId(priceId: string): Plan {
 }
 
 // ─── Feature gates ─────────────────────────────────────────────────────────
+
+import { getPlanConfig } from "@/lib/plans";
 
 export async function canCreateInvoice(userId: string, plan: Plan): Promise<boolean> {
   const { limits } = getPlanConfig(plan);
@@ -203,7 +106,6 @@ export async function getOrCreateStripeCustomer(
     return user.stripeCustomerId;
   }
 
-  // Dynamic import avoids referencing stripe in client bundles
   const stripe = (await import("@/lib/stripe")).default;
 
   const customer = await stripe.customers.create({
