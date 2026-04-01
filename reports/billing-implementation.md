@@ -28,9 +28,12 @@ Annual pricing: Pro $99/yr, Enterprise $249/yr.
 
 ### Core Library
 
-**`src/lib/billing.ts`** (new)
+**`src/lib/plans.ts`** (new)
 - `PLAN_CONFIGS` — canonical plan metadata (limits, features, pricing, highlights)
 - `getPlanConfig(plan)` — look up plan config
+
+**`src/lib/billing.ts`** (new)
+- Re-exports `PLAN_CONFIGS`, `getPlanConfig` from `@/lib/plans`
 - `getStripePriceId(plan)` — server-side Stripe price ID resolver
 - `planFromPriceId(priceId)` — reverse-map price ID to Plan enum
 - `canCreateInvoice(userId, plan)` — DB-backed gate for monthly invoice limit
@@ -43,6 +46,9 @@ Annual pricing: Pro $99/yr, Enterprise $249/yr.
 - `getActiveSubscription(userId)` — finds most recent ACTIVE / TRIALING / PAST_DUE subscription
 - `getAllSubscriptions(userId)` — full history
 - `getSubscriptionByStripeId(stripeSubscriptionId)` — lookup by Stripe ID
+
+**`src/lib/dal/index.ts`** (updated)
+- Added `export * from "./billing"` to expose billing DAL via barrel import
 
 ### API Routes
 
@@ -71,17 +77,32 @@ Annual pricing: Pro $99/yr, Enterprise $249/yr.
 - POST /api/billing/reactivate
 - Removes pending cancellation (cancel_at_period_end: false)
 
+**`src/app/api/invoices/route.ts`** (updated)
+- POST handler now enforces `canCreateInvoice(userId, plan)` gate
+- Returns HTTP 403 with upgrade prompt when monthly limit is exceeded
+
+**`src/app/api/clients/route.ts`** (updated)
+- POST handler now enforces `canCreateClient(userId, plan)` gate
+- Returns HTTP 403 with upgrade prompt when client limit is exceeded
+
+**`src/app/api/invoices/[id]/pdf/route.ts`** (updated)
+- GET handler now fetches `user.plan` and enforces `canDownloadPDF(plan)` gate
+- Returns HTTP 403 with upgrade prompt for Free plan users
+
 ### Webhook Handler
 
-**`src/app/api/webhooks/stripe/route.ts`** (updated)
+**`src/app/api/webhooks/stripe/route.ts`** (new)
 
-Added event handlers:
-- invoice.paid — re-syncs subscription state (handles past-due recovery)
-- invoice.payment_failed — marks subscription as PAST_DUE
-- customer.subscription.trial_will_end — logs trial end (hook for email notification)
+Handles events:
+- `payment_intent.succeeded` — marks invoice PAID, creates Payment record, logs activity
+- `checkout.session.completed` — marks invoice PAID from one-time checkout
+- `customer.subscription.created` / `updated` — upserts Subscription row, syncs user.plan
+- `customer.subscription.deleted` — sets status CANCELLED, resets user.plan to FREE
+- `invoice.paid` — re-syncs subscription (handles past-due recovery)
+- `invoice.payment_failed` — marks subscription PAST_DUE
+- `customer.subscription.trial_will_end` — logs trial end (hook for email notification)
 
-Refactored: extracted upsertSubscription(sub) helper using planFromPriceId for consistent
-plan resolution across all subscription events.
+All subscription mutations use `upsertSubscription(sub)` helper for consistent plan resolution.
 
 ### UI
 
@@ -92,7 +113,7 @@ plan resolution across all subscription events.
 - Displays annual savings percentages, no-card messaging
 
 **`src/app/(dashboard)/settings/page.tsx`** (updated)
-- BillingTab now fetches real data from /api/billing/subscription
+- BillingTab fetches real data from /api/billing/subscription
 - Shows current plan, trial status, period end, cancel-scheduled and past-due warnings
 - UsageBar component with color-coded progress (green/yellow/red)
 - Functional Upgrade / Manage Billing / Cancel Plan / Reactivate buttons
@@ -108,58 +129,55 @@ plan resolution across all subscription events.
 
 ## Subscription Flow
 
+```
 Sign up (free)
   -> Click "Start 14-day trial"
   -> POST /api/billing/checkout -> Stripe Checkout (card optional)
   -> Webhook: customer.subscription.created (status: trialing)
      -> DB: user.plan = PRO, subscription.status = TRIALING
-  -> Trial active (full Pro access)
+  -> Trial active (full Pro access, feature gates lifted)
   -> Trial ends -> Stripe collects payment
      -> invoice.paid -> subscription ACTIVE
      -> invoice.payment_failed -> subscription PAST_DUE
         -> User sees warning banner -> /api/billing/portal
   -> Active subscription
-     -> Upgrade/Downgrade via /api/billing/portal
-     -> Cancel via POST /api/billing/cancel
-     -> Reactivate via POST /api/billing/reactivate
+     -> Upgrade/Downgrade via /api/billing/portal (Stripe manages proration)
+     -> Cancel via POST /api/billing/cancel (cancel_at_period_end: true)
+     -> Reactivate via POST /api/billing/reactivate (cancel_at_period_end: false)
      -> Deleted -> customer.subscription.deleted -> user.plan = FREE
+```
+
+---
+
+## Feature Gates — Enforcement Points
+
+| Gate | Route | HTTP status on violation |
+|------|-------|--------------------------|
+| Monthly invoice limit | POST /api/invoices | 403 |
+| Client count limit | POST /api/clients | 403 |
+| PDF downloads | GET /api/invoices/[id]/pdf | 403 |
+| Custom branding | (settings UI) | N/A |
+| Payment reminders | POST /api/invoices/[id]/reminder | 403 (to add) |
 
 ---
 
 ## Environment Variables Required
 
+```
 STRIPE_SECRET_KEY=sk_...
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 STRIPE_PRO_PRICE_ID=price_...     (12/month recurring)
 STRIPE_TEAM_PRICE_ID=price_...    (29/month recurring)
-
----
-
-## Feature Gate Integration Points
-
-To enforce limits in existing routes, add:
-
-In POST /api/invoices:
-  import { canCreateInvoice } from "@/lib/billing";
-  const allowed = await canCreateInvoice(session.user.id, user.plan);
-  if (!allowed) return forbidden("Invoice limit reached. Upgrade to Pro.");
-
-In POST /api/clients:
-  import { canCreateClient } from "@/lib/billing";
-  const allowed = await canCreateClient(session.user.id, user.plan);
-  if (!allowed) return forbidden("Client limit reached. Upgrade to Pro.");
-
-In GET /api/invoices/[id]/pdf:
-  import { canDownloadPDF } from "@/lib/billing";
-  if (!canDownloadPDF(user.plan)) return forbidden("PDF downloads require Pro.");
+```
 
 ---
 
 ## Risks and Mitigations
 
-Webhook delivery failure: Stripe auto-retries; handler returns 200 on non-transient errors.
-Race on subscription upsert: Prisma upsert on unique stripeSubscriptionId is atomic.
-Stale plan in JWT: Plan re-fetched from DB on each privileged action.
-Card-not-required trial abuse: Trial is per Stripe customer; email uniqueness enforced.
-Webhook signature bypass: stripe.webhooks.constructEvent validates HMAC-SHA256 before processing.
+- **Webhook delivery failure**: Stripe auto-retries; handler returns 200 on non-transient errors.
+- **Race on subscription upsert**: Prisma upsert on unique `stripeSubscriptionId` is atomic.
+- **Stale plan in JWT**: Plan re-fetched from DB on each privileged action (not cached in session).
+- **Card-not-required trial abuse**: Trial is per Stripe customer; email uniqueness enforced at registration.
+- **Webhook signature bypass**: `stripe.webhooks.constructEvent` validates HMAC-SHA256 before processing.
+- **Feature gate bypass**: Gates run server-side only; client UI is decorative, gates enforce on API.
