@@ -7,24 +7,26 @@ import type { ApiResponse } from "@/types";
 
 const resetSchema = z.object({
   token: z.string().min(1, "Token is required"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .max(128, "Password too long"),
 });
 
 /**
  * POST /api/auth/reset-password
  *
- * Validates the reset token, hashes the new password, and updates the user.
- * Marks the token as used after a successful reset.
- * Rate limited to 5 attempts per IP per 15 minutes.
+ * Verifies the reset token and updates the user's password.
+ * Rate-limited to 10 attempts per IP per hour.
  */
 export async function POST(
   req: NextRequest
-): Promise<NextResponse<ApiResponse<null>>> {
+): Promise<NextResponse<ApiResponse<{ reset: boolean }>>> {
   const ip = getClientIp(req.headers);
-  const rl = checkRateLimit(`reset-password:${ip}`, 5, 15 * 60);
+  const rl = checkRateLimit(`reset-pw:${ip}`, 10, 60 * 60);
   if (!rl.success) {
     return NextResponse.json(
-      { error: "Too many attempts. Please try again later." },
+      { error: "Too many requests. Please try again later." },
       { status: 429 }
     );
   }
@@ -34,7 +36,7 @@ export async function POST(
 
   if (!parsed.success) {
     return NextResponse.json(
-      { error: parsed.error.errors[0]?.message ?? "Invalid input" },
+      { error: parsed.error.errors[0]?.message ?? "Invalid request" },
       { status: 400 }
     );
   }
@@ -48,21 +50,21 @@ export async function POST(
 
   if (!resetToken) {
     return NextResponse.json(
-      { error: "Invalid or expired reset token." },
+      { error: "Invalid or expired reset link" },
       { status: 400 }
     );
   }
 
   if (resetToken.usedAt !== null) {
     return NextResponse.json(
-      { error: "This reset link has already been used." },
+      { error: "This reset link has already been used" },
       { status: 400 }
     );
   }
 
   if (resetToken.expiresAt < new Date()) {
     return NextResponse.json(
-      { error: "This reset link has expired. Please request a new one." },
+      { error: "This reset link has expired" },
       { status: 400 }
     );
   }
@@ -80,8 +82,5 @@ export async function POST(
     }),
   ]);
 
-  return NextResponse.json(
-    { data: null, message: "Password updated successfully. You can now sign in." },
-    { status: 200 }
-  );
+  return NextResponse.json({ data: { reset: true } }, { status: 200 });
 }
