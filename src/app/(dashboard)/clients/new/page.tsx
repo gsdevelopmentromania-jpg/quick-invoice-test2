@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Skeleton, SkeletonText } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardBody } from "@/components/ui/card";
 
 export const metadata: Metadata = {
   title: "New Client",
@@ -8,45 +9,53 @@ export const metadata: Metadata = {
 
 export default function NewClientPage(): React.ReactElement {
   return (
-    <div className="p-6 space-y-5 max-w-xl mx-auto">
-      {/* Page header */}
-      <div className="flex items-center gap-3">
+    <div className="p-6 max-w-xl mx-auto">
+      {/* Back link + heading */}
+      <div className="mb-6">
         <Link
           href="/clients"
-          className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors"
-          aria-label="Back to clients"
+          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 mb-3"
         >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
+          <svg
+            className="h-4 w-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={2}
+            stroke="currentColor"
+            aria-hidden="true"
+          >
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
+          Back to clients
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900">New Client</h1>
+        <h1 className="text-2xl font-semibold text-gray-900">Add Client</h1>
+        <p className="mt-1 text-sm text-gray-500">
+          Save client details to reuse across invoices.
+        </p>
       </div>
 
-      {/* Form placeholder — implementation in feature task */}
-      <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-4" aria-label="Client form (coming soon)">
-        {[
-          "Full name",
-          "Email address",
-          "Company (optional)",
-          "Phone (optional)",
-          "Address (optional)",
-        ].map((label) => (
-          <div key={label} className="space-y-1">
-            <SkeletonText className="w-28 h-3" />
-            <Skeleton className="h-9 w-full" />
-          </div>
-        ))}
+      {/* Placeholder card */}
+      <Card>
+        <CardHeader>
+          <h2 className="text-base font-semibold text-gray-900">Client details</h2>
+        </CardHeader>
+        <CardBody>
+          <p className="text-sm text-gray-500">
+            The client form will be built in the next feature task.
+          </p>
+        </CardBody>
+      </Card>
 
-        <div className="pt-2 flex justify-end gap-3">
-          <Link
-            href="/clients"
-            className="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-          >
+      {/* Action row */}
+      <div className="mt-6 flex justify-end gap-3">
+        <Link href="/clients">
+          <Button variant="outline" size="md">
             Cancel
-          </Link>
-          <Skeleton className="h-9 w-28" />
-        </div>
+          </Button>
+        </Link>
+        <Button variant="primary" size="md" disabled>
+          Save Client
+        </Button>
       </div>
     </div>
   );
