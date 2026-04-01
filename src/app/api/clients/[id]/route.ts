@@ -12,6 +12,7 @@ const updateClientSchema = z.object({
   company: z.string().optional(),
   address: z.string().optional(),
   phone: z.string().optional(),
+  currency: z.string().length(3).optional(),
   notes: z.string().optional(),
 });
 
@@ -27,15 +28,20 @@ export async function GET(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const client = await prisma.client.findFirst({
-    where: { id: params.id, userId: session.user.id },
-  });
+  try {
+    const client = await prisma.client.findFirst({
+      where: { id: params.id, userId: session.user.id },
+    });
 
-  if (!client) {
-    return NextResponse.json({ error: "Client not found" }, { status: 404 });
+    if (!client) {
+      return NextResponse.json({ error: "Client not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ data: client });
+  } catch (err) {
+    console.error("GET /api/clients/[id] error:", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-
-  return NextResponse.json({ data: client });
 }
 
 /**
@@ -50,25 +56,30 @@ export async function PATCH(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const exists = await prisma.client.findFirst({
-    where: { id: params.id, userId: session.user.id },
-  });
-  if (!exists) {
-    return NextResponse.json({ error: "Client not found" }, { status: 404 });
+  try {
+    const exists = await prisma.client.findFirst({
+      where: { id: params.id, userId: session.user.id },
+    });
+    if (!exists) {
+      return NextResponse.json({ error: "Client not found" }, { status: 404 });
+    }
+
+    const body: unknown = await req.json();
+    const parsed = updateClientSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.message }, { status: 400 });
+    }
+
+    const updated = await prisma.client.update({
+      where: { id: params.id },
+      data: parsed.data,
+    });
+
+    return NextResponse.json({ data: updated });
+  } catch (err) {
+    console.error("PATCH /api/clients/[id] error:", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-
-  const body: unknown = await req.json();
-  const parsed = updateClientSchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.message }, { status: 400 });
-  }
-
-  const updated = await prisma.client.update({
-    where: { id: params.id },
-    data: parsed.data,
-  });
-
-  return NextResponse.json({ data: updated });
 }
 
 /**
@@ -83,14 +94,19 @@ export async function DELETE(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const client = await prisma.client.findFirst({
-    where: { id: params.id, userId: session.user.id },
-  });
-  if (!client) {
-    return NextResponse.json({ error: "Client not found" }, { status: 404 });
+  try {
+    const client = await prisma.client.findFirst({
+      where: { id: params.id, userId: session.user.id },
+    });
+    if (!client) {
+      return NextResponse.json({ error: "Client not found" }, { status: 404 });
+    }
+
+    await prisma.client.delete({ where: { id: params.id } });
+
+    return NextResponse.json({ data: { deleted: true } });
+  } catch (err) {
+    console.error("DELETE /api/clients/[id] error:", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-
-  await prisma.client.delete({ where: { id: params.id } });
-
-  return NextResponse.json({ data: { deleted: true } });
 }
