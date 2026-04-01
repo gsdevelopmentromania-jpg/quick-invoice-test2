@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { SkeletonStatCard, SkeletonCard } from "@/components/ui/skeleton";
+import { SkeletonDashboard } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -8,48 +8,43 @@ export const metadata: Metadata = {
 
 export default function DashboardPage(): React.ReactElement {
   return (
-    <div className="p-6 space-y-6">
-      {/* Page header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="mt-0.5 text-sm text-gray-500">Welcome back! Here&apos;s an overview.</p>
-        </div>
-        <Link
-          href="/invoices/new"
-          className="hidden sm:inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors"
-        >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-          </svg>
-          New Invoice
-        </Link>
+    <div className="p-6">
+      {/* Page heading */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
+        <p className="mt-1 text-sm text-gray-500">
+          Welcome back — here&apos;s a summary of your invoicing activity.
+        </p>
       </div>
 
-      {/* Stats row — placeholder skeletons until feature implementation */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4" aria-label="Overview statistics">
-        <SkeletonStatCard />
-        <SkeletonStatCard />
-        <SkeletonStatCard />
-        <SkeletonStatCard />
+      {/* Placeholder: feature content will be added in the next task */}
+      <div className="rounded-xl border border-dashed border-gray-300 bg-white">
+        <EmptyState
+          icon={
+            <svg
+              className="h-7 w-7"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+              />
+            </svg>
+          }
+          title="Dashboard coming soon"
+          description="Stats, recent invoices, and quick actions will appear here."
+        />
       </div>
 
-      {/* Recent invoices placeholder */}
-      <section aria-labelledby="recent-invoices-heading">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 id="recent-invoices-heading" className="text-base font-semibold text-gray-900">
-            Recent Invoices
-          </h2>
-          <Link href="/invoices" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
-            View all
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          <SkeletonCard />
-          <SkeletonCard />
-          <SkeletonCard />
-        </div>
-      </section>
+      {/* Skeleton preview (hidden — used during loading states) */}
+      <div className="sr-only" aria-hidden="true">
+        <SkeletonDashboard />
+      </div>
     </div>
   );
 }
