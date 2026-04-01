@@ -25,6 +25,7 @@ export function Card({ children, className }: CardProps): React.ReactElement {
     <div
       className={cn(
         "rounded-xl border border-gray-200 bg-white shadow-sm",
+        "dark:border-gray-700 dark:bg-gray-800",
         className
       )}
     >
@@ -35,7 +36,7 @@ export function Card({ children, className }: CardProps): React.ReactElement {
 
 export function CardHeader({ children, className }: CardHeaderProps): React.ReactElement {
   return (
-    <div className={cn("border-b border-gray-100 px-5 py-4", className)}>
+    <div className={cn("border-b border-gray-100 px-5 py-4 dark:border-gray-700", className)}>
       {children}
     </div>
   );
@@ -47,7 +48,7 @@ export function CardBody({ children, className }: CardBodyProps): React.ReactEle
 
 export function CardFooter({ children, className }: CardFooterProps): React.ReactElement {
   return (
-    <div className={cn("border-t border-gray-100 px-5 py-3", className)}>
+    <div className={cn("border-t border-gray-100 px-5 py-3 dark:border-gray-700", className)}>
       {children}
     </div>
   );
