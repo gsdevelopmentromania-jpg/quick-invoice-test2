@@ -14,8 +14,8 @@ export default function ErrorPage({ error, reset }: ErrorPageProps): React.React
   }, [error]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-6 text-center">
-      <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 dark:bg-gray-950 px-6 text-center">
+      <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
         <svg
           className="h-8 w-8 text-red-500"
           fill="none"
@@ -31,14 +31,14 @@ export default function ErrorPage({ error, reset }: ErrorPageProps): React.React
           />
         </svg>
       </div>
-      <h1 className="text-2xl font-bold text-gray-900">Something went wrong</h1>
-      <p className="mt-2 text-sm text-gray-500 max-w-md">
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Something went wrong</h1>
+      <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 max-w-md">
         {error.message
           ? error.message
           : "An unexpected error occurred. Our team has been notified."}
       </p>
       {error.digest && (
-        <p className="mt-1 font-mono text-xs text-gray-400">Error ID: {error.digest}</p>
+        <p className="mt-1 font-mono text-xs text-gray-400 dark:text-gray-500">Error ID: {error.digest}</p>
       )}
       <div className="mt-8 flex gap-3">
         <Button variant="primary" onClick={reset}>

@@ -14,13 +14,13 @@ export default function BlogPage(): React.ReactElement {
   const posts = getAllPosts();
 
   return (
-    <div className="min-h-screen bg-white">
-      <header className="px-6 py-16 text-center border-b border-gray-100">
+    <div className="min-h-screen bg-white dark:bg-gray-900">
+      <header className="px-6 py-16 text-center border-b border-gray-100 dark:border-gray-800">
         <div className="mx-auto max-w-2xl">
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900">
+          <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
             Freelance Invoicing Blog
           </h1>
-          <p className="mt-4 text-lg text-gray-500">
+          <p className="mt-4 text-lg text-gray-500 dark:text-gray-400">
             Practical guides to get paid faster, invoice professionally, and
             build a billing workflow that works.
           </p>
@@ -32,24 +32,24 @@ export default function BlogPage(): React.ReactElement {
           {posts.map((post) => (
             <article
               key={post.slug}
-              className="border border-gray-100 rounded-xl p-6 hover:border-indigo-200 hover:shadow-sm transition"
+              className="border border-gray-100 dark:border-gray-700 rounded-xl p-6 hover:border-indigo-200 dark:hover:border-indigo-700 hover:shadow-sm transition"
             >
               <div className="flex items-center gap-3 mb-3">
-                <span className="text-xs font-semibold uppercase tracking-wide text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full">
+                <span className="text-xs font-semibold uppercase tracking-wide text-indigo-600 bg-indigo-50 dark:bg-indigo-900/40 px-2 py-1 rounded-full">
                   {post.category}
                 </span>
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-gray-400 dark:text-gray-500">
                   {new Date(post.publishedAt).toLocaleDateString("en-US", {
                     year: "numeric",
                     month: "long",
                     day: "numeric",
                   })}
                 </span>
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-gray-400 dark:text-gray-500">
                   · {post.readingTimeMinutes} min read
                 </span>
               </div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-2 leading-snug">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2 leading-snug">
                 <Link
                   href={`/blog/${post.slug}`}
                   className="hover:text-indigo-600 transition"
@@ -57,14 +57,14 @@ export default function BlogPage(): React.ReactElement {
                   {post.title}
                 </Link>
               </h2>
-              <p className="text-gray-500 text-sm leading-relaxed">
+              <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
                 {post.description}
               </p>
               <div className="mt-4 flex flex-wrap gap-2">
                 {post.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded-full"
+                    className="text-xs text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-full"
                   >
                     {tag}
                   </span>
@@ -80,11 +80,11 @@ export default function BlogPage(): React.ReactElement {
           ))}
         </div>
 
-        <div className="mx-auto max-w-2xl mt-16 text-center rounded-2xl bg-indigo-50 p-10">
-          <h2 className="text-2xl font-bold text-gray-900 mb-3">
+        <div className="mx-auto max-w-2xl mt-16 text-center rounded-2xl bg-indigo-50 dark:bg-indigo-950/50 p-10">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
             Ready to invoice faster?
           </h2>
-          <p className="text-gray-600 mb-6">
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
             Create your first invoice in under two minutes. Free forever on the
             starter plan.
           </p>

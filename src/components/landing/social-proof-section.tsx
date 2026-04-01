@@ -59,14 +59,14 @@ function StarRating(): React.ReactElement {
 
 export function SocialProofSection(): React.ReactElement {
   return (
-    <section id="social-proof" className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
+    <section id="social-proof" className="py-24 px-4 sm:px-6 lg:px-8 bg-white dark:bg-gray-900">
       <div className="max-w-6xl mx-auto">
         {/* Section heading */}
         <div className="text-center mb-16">
           <p className="text-sm font-semibold text-indigo-600 uppercase tracking-wide mb-3">
             Loved by freelancers
           </p>
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
             Real freelancers. Real results.
           </h2>
         </div>
@@ -78,7 +78,7 @@ export function SocialProofSection(): React.ReactElement {
               <p className="text-4xl font-bold text-indigo-600 mb-1">
                 {metric.value}
               </p>
-              <p className="text-sm text-gray-500">{metric.label}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{metric.label}</p>
             </div>
           ))}
         </div>
@@ -88,10 +88,10 @@ export function SocialProofSection(): React.ReactElement {
           {testimonials.map((t) => (
             <div
               key={t.name}
-              className="flex flex-col gap-4 p-6 rounded-2xl border border-gray-100 bg-gray-50 hover:border-indigo-100 hover:bg-indigo-50/30 transition-colors"
+              className="flex flex-col gap-4 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:border-indigo-100 dark:hover:border-indigo-700 hover:bg-indigo-50/30 dark:hover:bg-indigo-900/20 transition-colors"
             >
               <StarRating />
-              <blockquote className="text-gray-700 text-sm leading-relaxed flex-1">
+              <blockquote className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed flex-1">
                 &ldquo;{t.quote}&rdquo;
               </blockquote>
               <div className="flex items-center gap-3">
@@ -102,10 +102,10 @@ export function SocialProofSection(): React.ReactElement {
                   {t.initials}
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-gray-900">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">
                     {t.name}
                   </p>
-                  <p className="text-xs text-gray-500">{t.role}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{t.role}</p>
                 </div>
               </div>
             </div>
@@ -114,14 +114,14 @@ export function SocialProofSection(): React.ReactElement {
 
         {/* Trusted by */}
         <div className="text-center">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-6">
+          <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-6">
             Trusted by teams at
           </p>
           <div className="flex flex-wrap justify-center items-center gap-x-10 gap-y-4">
             {trustedBy.map((name) => (
               <span
                 key={name}
-                className="text-gray-300 font-semibold text-lg tracking-tight select-none"
+                className="text-gray-300 dark:text-gray-600 font-semibold text-lg tracking-tight select-none"
                 aria-label={name}
               >
                 {name}

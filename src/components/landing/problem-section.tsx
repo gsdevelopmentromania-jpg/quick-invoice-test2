@@ -36,19 +36,19 @@ const painPoints = [
 
 export function ProblemSection(): React.ReactElement {
   return (
-    <section id="problem" className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
+    <section id="problem" className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-950">
       <div className="max-w-6xl mx-auto">
         {/* Section label */}
         <div className="text-center mb-14">
           <p className="text-sm font-semibold uppercase tracking-widest text-indigo-600 mb-3">
             Sound familiar?
           </p>
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
             Freelancing is hard enough.
             <br />
             Invoicing shouldn&apos;t make it harder.
           </h2>
-          <p className="text-lg text-gray-500 max-w-2xl mx-auto">
+          <p className="text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">
             Most freelancers lose an average of 5–8 billable hours a month to administrative work.
             Here&apos;s what we hear most often.
           </p>
@@ -59,19 +59,19 @@ export function ProblemSection(): React.ReactElement {
           {painPoints.map((point, idx) => (
             <div
               key={point.id}
-              className="relative bg-white rounded-2xl border border-gray-200 p-6 shadow-sm"
+              className="relative bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm"
             >
               {/* Number */}
-              <span className="absolute top-5 right-5 text-5xl font-extrabold text-gray-100 select-none leading-none" aria-hidden="true">
+              <span className="absolute top-5 right-5 text-5xl font-extrabold text-gray-100 dark:text-gray-700 select-none leading-none" aria-hidden="true">
                 {idx + 1}
               </span>
 
-              <div className="mb-4 inline-flex items-center justify-center w-12 h-12 rounded-xl bg-red-50 text-red-500">
+              <div className="mb-4 inline-flex items-center justify-center w-12 h-12 rounded-xl bg-red-50 dark:bg-red-900/30 text-red-500">
                 {point.icon}
               </div>
 
-              <h3 className="text-base font-semibold text-gray-900 mb-2">{point.title}</h3>
-              <p className="text-sm text-gray-500 leading-relaxed">{point.description}</p>
+              <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-2">{point.title}</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{point.description}</p>
             </div>
           ))}
         </div>
