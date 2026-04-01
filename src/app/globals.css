@@ -39,6 +39,21 @@
     --header-height: 64px;
   }
 
+  .dark {
+    /* Neutral surface tokens — dark */
+    --color-bg: 17 24 39;
+    --color-surface: 31 41 55;
+    --color-surface-raised: 55 65 81;
+    --color-border: 55 65 81;
+    --color-border-strong: 75 85 99;
+
+    /* Typography tokens — dark */
+    --color-text-primary: 249 250 251;
+    --color-text-secondary: 209 213 219;
+    --color-text-muted: 156 163 175;
+    --color-text-disabled: 107 114 128;
+  }
+
   html {
     font-size: 16px;
   }
@@ -76,6 +91,17 @@
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
   }
+
+  .dark .skeleton-shimmer {
+    background: linear-gradient(
+      90deg,
+      rgb(55 65 81) 25%,
+      rgb(75 85 99) 50%,
+      rgb(55 65 81) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
 }
 
 @keyframes shimmer {
@@ -106,4 +132,15 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgb(156 163 175);
+}
+
+/* ─────────────────────────────────────────
+   Dark mode scrollbar
+───────────────────────────────────────── */
+.dark ::-webkit-scrollbar-thumb {
+  background: rgb(75 85 99);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgb(107 114 128);
 }
