@@ -37,7 +37,11 @@ export function SkeletonCard({ className }: SkeletonProps): React.ReactElement {
   return (
     <div
       aria-hidden="true"
-      className={cn("rounded-xl border border-gray-200 bg-white p-5 space-y-3", className)}
+      className={cn(
+        "rounded-xl border border-gray-200 bg-white p-5 space-y-3",
+        "dark:border-gray-700 dark:bg-gray-800",
+        className
+      )}
     >
       <div className="flex items-center justify-between">
         <Skeleton className="h-5 w-32" />
@@ -57,7 +61,11 @@ export function SkeletonStatCard({ className }: SkeletonProps): React.ReactEleme
   return (
     <div
       aria-hidden="true"
-      className={cn("rounded-xl border border-gray-200 bg-white p-5 space-y-2", className)}
+      className={cn(
+        "rounded-xl border border-gray-200 bg-white p-5 space-y-2",
+        "dark:border-gray-700 dark:bg-gray-800",
+        className
+      )}
     >
       <Skeleton className="h-4 w-24" />
       <Skeleton className="h-8 w-32" />
