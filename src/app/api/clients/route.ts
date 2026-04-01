@@ -12,12 +12,13 @@ const createClientSchema = z.object({
   company: z.string().optional(),
   address: z.string().optional(),
   phone: z.string().optional(),
+  currency: z.string().length(3).optional(),
   notes: z.string().optional(),
 });
 
 /**
  * GET /api/clients
- * Returns all clients for the authenticated user.
+ * Returns paginated clients for the authenticated user.
  */
 export async function GET(
   req: NextRequest
@@ -27,43 +28,49 @@ export async function GET(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { searchParams } = new URL(req.url);
-  const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
-  const pageSize = Math.min(100, Math.max(1, parseInt(searchParams.get("pageSize") ?? "50", 10)));
-  const search = searchParams.get("search") ?? undefined;
+  try {
+    const { searchParams } = new URL(req.url);
+    const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
+    const pageSize = Math.min(100, Math.max(1, parseInt(searchParams.get("pageSize") ?? "50", 10)));
+    const search = searchParams.get("search") ?? undefined;
 
-  const where = {
-    userId: session.user.id,
-    ...(search
-      ? {
-          OR: [
-            { name: { contains: search, mode: "insensitive" as const } },
-            { email: { contains: search, mode: "insensitive" as const } },
-            { company: { contains: search, mode: "insensitive" as const } },
-          ],
-        }
-      : {}),
-  };
+    const where = {
+      userId: session.user.id,
+      ...(search
+        ? {
+            OR: [
+              { name: { contains: search, mode: "insensitive" as const } },
+              { email: { contains: search, mode: "insensitive" as const } },
+              { company: { contains: search, mode: "insensitive" as const } },
+            ],
+          }
+        : {}),
+    };
 
-  const [clients, total] = await Promise.all([
-    prisma.client.findMany({
-      where,
-      orderBy: { name: "asc" },
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-    }),
-    prisma.client.count({ where }),
-  ]);
+    const [clients, total] = await Promise.all([
+      prisma.client.findMany({
+        where,
+        orderBy: { name: "asc" },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      prisma.client.count({ where }),
+    ]);
 
-  return NextResponse.json({
-    data: {
-      data: clients,
-      total,
-      page,
-      pageSize,
-      totalPages: Math.ceil(total / pageSize),
-    },
-  });
+    return NextResponse.json({
+      data: {
+        data: clients,
+        total,
+        page,
+        pageSize,
+        totalPages: Math.ceil(total / pageSize),
+        limit: pageSize,
+      },
+    });
+  } catch (err) {
+    console.error("GET /api/clients error:", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 }
 
 /**
@@ -78,15 +85,20 @@ export async function POST(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body: unknown = await req.json();
-  const parsed = createClientSchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.message }, { status: 400 });
+  try {
+    const body: unknown = await req.json();
+    const parsed = createClientSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.message }, { status: 400 });
+    }
+
+    const client = await prisma.client.create({
+      data: { ...parsed.data, userId: session.user.id },
+    });
+
+    return NextResponse.json({ data: client }, { status: 201 });
+  } catch (err) {
+    console.error("POST /api/clients error:", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-
-  const client = await prisma.client.create({
-    data: { ...parsed.data, userId: session.user.id },
-  });
-
-  return NextResponse.json({ data: client }, { status: 201 });
 }
