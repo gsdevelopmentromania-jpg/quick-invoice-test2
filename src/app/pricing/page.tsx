@@ -27,17 +27,17 @@ export default function PricingPage(): React.ReactElement {
   const { FREE, PRO, TEAM } = PLAN_CONFIGS;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-gray-900">
       {/* Nav */}
-      <nav className="border-b border-gray-100 px-6 py-4">
+      <nav className="border-b border-gray-100 dark:border-gray-800 px-6 py-4">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
-          <Link href="/" className="text-xl font-bold text-gray-900">
+          <Link href="/" className="text-xl font-bold text-gray-900 dark:text-white">
             Quick Invoice
           </Link>
           <div className="flex items-center gap-4">
             <Link
               href="/login"
-              className="text-sm font-medium text-gray-600 hover:text-gray-900"
+              className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
             >
               Sign in
             </Link>
@@ -54,13 +54,13 @@ export default function PricingPage(): React.ReactElement {
       {/* Header */}
       <header className="px-6 py-20 text-center">
         <div className="mx-auto max-w-2xl">
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
+          <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-5xl">
             Simple, transparent pricing
           </h1>
-          <p className="mt-4 text-lg text-gray-500">
+          <p className="mt-4 text-lg text-gray-500 dark:text-gray-400">
             Start free, upgrade when you need more. No surprise fees.
             <br />
-            <strong className="text-gray-700">14-day free trial</strong> on paid plans — no credit
+            <strong className="text-gray-700 dark:text-gray-300">14-day free trial</strong> on paid plans — no credit
             card required.
           </p>
         </div>
@@ -70,21 +70,21 @@ export default function PricingPage(): React.ReactElement {
       <section className="px-6 pb-24">
         <div className="mx-auto grid max-w-5xl gap-8 lg:grid-cols-3">
           {/* Free */}
-          <div className="flex flex-col rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
+          <div className="flex flex-col rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-8 shadow-sm">
             <div className="flex-1">
-              <p className="text-sm font-semibold uppercase tracking-wide text-gray-500">
+              <p className="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                 {FREE.name}
               </p>
               <p className="mt-4 flex items-baseline gap-1">
-                <span className="text-5xl font-extrabold text-gray-900">$0</span>
-                <span className="text-sm text-gray-500">/ month</span>
+                <span className="text-5xl font-extrabold text-gray-900 dark:text-white">$0</span>
+                <span className="text-sm text-gray-500 dark:text-gray-400">/ month</span>
               </p>
-              <p className="mt-3 text-sm text-gray-500">
+              <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
                 Perfect for getting started. No credit card required.
               </p>
               <ul className="mt-8 space-y-3">
                 {FREE.highlights.map((h) => (
-                  <li key={h} className="flex items-center gap-2 text-sm text-gray-700">
+                  <li key={h} className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                     <CheckIcon />
                     {h}
                   </li>
@@ -93,14 +93,14 @@ export default function PricingPage(): React.ReactElement {
             </div>
             <Link
               href="/register"
-              className="mt-8 block rounded-lg border border-gray-300 px-4 py-3 text-center text-sm font-semibold text-gray-700 hover:bg-gray-50"
+              className="mt-8 block rounded-lg border border-gray-300 dark:border-gray-600 px-4 py-3 text-center text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               Get started free
             </Link>
           </div>
 
           {/* Pro — highlighted */}
-          <div className="relative flex flex-col rounded-2xl border-2 border-indigo-600 bg-white p-8 shadow-lg">
+          <div className="relative flex flex-col rounded-2xl border-2 border-indigo-600 bg-white dark:bg-gray-800 p-8 shadow-lg">
             <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-indigo-600 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-white">
               Most popular
             </span>
@@ -109,13 +109,13 @@ export default function PricingPage(): React.ReactElement {
                 {PRO.name}
               </p>
               <p className="mt-4 flex items-baseline gap-1">
-                <span className="text-5xl font-extrabold text-gray-900">
+                <span className="text-5xl font-extrabold text-gray-900 dark:text-white">
                   ${PRO.monthlyPriceUsd}
                 </span>
-                <span className="text-sm text-gray-500">/ month</span>
+                <span className="text-sm text-gray-500 dark:text-gray-400">/ month</span>
               </p>
               {PRO.annualPriceUsd && (
-                <p className="mt-1 text-xs text-gray-400">
+                <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
                   or ${PRO.annualPriceUsd}/yr (save{" "}
                   {Math.round(
                     100 - (PRO.annualPriceUsd / (PRO.monthlyPriceUsd * 12)) * 100
@@ -123,12 +123,12 @@ export default function PricingPage(): React.ReactElement {
                   %)
                 </p>
               )}
-              <p className="mt-3 text-sm text-gray-500">
+              <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
                 Everything you need to run a professional invoicing business.
               </p>
               <ul className="mt-8 space-y-3">
                 {PRO.highlights.map((h) => (
-                  <li key={h} className="flex items-center gap-2 text-sm text-gray-700">
+                  <li key={h} className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                     <CheckIcon />
                     {h}
                   </li>
@@ -141,25 +141,25 @@ export default function PricingPage(): React.ReactElement {
             >
               Start 14-day free trial
             </Link>
-            <p className="mt-2 text-center text-xs text-gray-400">
+            <p className="mt-2 text-center text-xs text-gray-400 dark:text-gray-500">
               No credit card required
             </p>
           </div>
 
           {/* Enterprise (TEAM) */}
-          <div className="flex flex-col rounded-2xl border border-gray-200 bg-gray-50 p-8 shadow-sm">
+          <div className="flex flex-col rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-8 shadow-sm">
             <div className="flex-1">
-              <p className="text-sm font-semibold uppercase tracking-wide text-gray-500">
+              <p className="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                 {TEAM.name}
               </p>
               <p className="mt-4 flex items-baseline gap-1">
-                <span className="text-5xl font-extrabold text-gray-900">
+                <span className="text-5xl font-extrabold text-gray-900 dark:text-white">
                   ${TEAM.monthlyPriceUsd}
                 </span>
-                <span className="text-sm text-gray-500">/ month</span>
+                <span className="text-sm text-gray-500 dark:text-gray-400">/ month</span>
               </p>
               {TEAM.annualPriceUsd && (
-                <p className="mt-1 text-xs text-gray-400">
+                <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
                   or ${TEAM.annualPriceUsd}/yr (save{" "}
                   {Math.round(
                     100 - (TEAM.annualPriceUsd / (TEAM.monthlyPriceUsd * 12)) * 100
@@ -167,12 +167,12 @@ export default function PricingPage(): React.ReactElement {
                   %)
                 </p>
               )}
-              <p className="mt-3 text-sm text-gray-500">
+              <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
                 Designed for growing teams and agencies.
               </p>
               <ul className="mt-8 space-y-3">
                 {TEAM.highlights.map((h) => (
-                  <li key={h} className="flex items-center gap-2 text-sm text-gray-700">
+                  <li key={h} className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                     <CheckIcon />
                     {h}
                   </li>
@@ -181,11 +181,11 @@ export default function PricingPage(): React.ReactElement {
             </div>
             <Link
               href={`/register?plan=TEAM`}
-              className="mt-8 block rounded-lg border border-gray-300 bg-white px-4 py-3 text-center text-sm font-semibold text-gray-700 hover:bg-gray-50"
+              className="mt-8 block rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-center text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600"
             >
               Start 14-day free trial
             </Link>
-            <p className="mt-2 text-center text-xs text-gray-400">
+            <p className="mt-2 text-center text-xs text-gray-400 dark:text-gray-500">
               No credit card required
             </p>
           </div>
@@ -193,7 +193,7 @@ export default function PricingPage(): React.ReactElement {
 
         {/* FAQ-style notes */}
         <div className="mx-auto mt-16 max-w-2xl text-center">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             All plans include SSL encryption, 99.9% uptime SLA, and GDPR-compliant data
             processing.{" "}
             <Link href="/register" className="font-medium text-indigo-600 hover:underline">
