@@ -71,6 +71,12 @@ jobs:
       NEXT_PUBLIC_APP_URL: http://localhost:3000
       STRIPE_SECRET_KEY: sk_test_placeholder
       STRIPE_WEBHOOK_SECRET: whsec_placeholder
+      # Sentry — required for source map uploads during CI builds.
+      # Add these as repository secrets in GitHub → Settings → Secrets → Actions.
+      NEXT_PUBLIC_SENTRY_DSN: ${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+      SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -80,3 +86,11 @@ jobs:
       - run: npm ci
       - run: npm run db:generate
       - run: npm run build
+
+# ─────────────────────────────────────────
+# Required GitHub Secrets (Settings → Secrets → Actions):
+#   NEXT_PUBLIC_SENTRY_DSN  — Sentry DSN (from Project Settings → Client Keys)
+#   SENTRY_AUTH_TOKEN       — Sentry auth token with project:releases scope
+#   SENTRY_ORG              — Sentry organisation slug
+#   SENTRY_PROJECT          — Sentry project slug
+# ─────────────────────────────────────────
