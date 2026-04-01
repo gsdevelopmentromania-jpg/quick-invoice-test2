@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { canDownloadPDF } from "@/lib/billing";
 
 /**
  * GET /api/v1/invoices/[id]/pdf
  * Generates and streams a PDF for the given invoice.
+ * Requires Pro or higher plan (feature gate: pdfDownloads).
  */
 export async function GET(
   _req: NextRequest,
@@ -24,6 +26,7 @@ export async function GET(
     prisma.user.findUnique({
       where: { id: session.user.id },
       select: {
+        plan: true,
         fullName: true,
         email: true,
         businessName: true,
@@ -35,6 +38,18 @@ export async function GET(
 
   if (!invoice) {
     return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
+  }
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // ── Feature gate: PDF downloads require Pro or higher ──────────────────
+  if (!canDownloadPDF(user.plan)) {
+    return NextResponse.json(
+      { error: "PDF downloads require a Pro plan. Upgrade to unlock this feature." },
+      { status: 403 }
+    );
   }
 
   // Dynamic import to avoid edge runtime — PDF rendering needs Node.js
