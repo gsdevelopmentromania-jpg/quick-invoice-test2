@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 const PAGE_TITLES: Record<string, string> = {
   "/dashboard": "Dashboard",
@@ -26,12 +27,12 @@ export function Header({ onMenuOpen }: HeaderProps): React.ReactElement {
   const pageTitle = (title && PAGE_TITLES[title]) ?? "Quick Invoice";
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-gray-200 bg-white px-4 lg:hidden">
+    <header className="flex h-16 items-center justify-between border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 lg:hidden">
       {/* Hamburger */}
       <button
         type="button"
         onClick={onMenuOpen}
-        className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+        className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
         aria-label="Open navigation menu"
       >
         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" aria-hidden="true">
@@ -40,18 +41,21 @@ export function Header({ onMenuOpen }: HeaderProps): React.ReactElement {
       </button>
 
       {/* Page title */}
-      <span className="text-base font-semibold text-gray-900">{pageTitle}</span>
+      <span className="text-base font-semibold text-gray-900 dark:text-white">{pageTitle}</span>
 
-      {/* Quick action */}
-      <Link
-        href="/invoices/new"
-        className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-        aria-label="Create new invoice"
-      >
-        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-        </svg>
-      </Link>
+      {/* Actions */}
+      <div className="flex items-center gap-1">
+        <ThemeToggle />
+        <Link
+          href="/invoices/new"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+          aria-label="Create new invoice"
+        >
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+        </Link>
+      </div>
     </header>
   );
 }

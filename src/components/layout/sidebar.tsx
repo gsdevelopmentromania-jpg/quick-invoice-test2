@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 interface NavItem {
   label: string;
@@ -58,15 +59,15 @@ export function Sidebar({ onClose }: SidebarProps): React.ReactElement {
   const pathname = usePathname();
 
   return (
-    <aside className="flex h-full w-[240px] flex-col border-r border-gray-200 bg-white">
+    <aside className="flex h-full w-[240px] flex-col border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
       {/* Logo */}
-      <div className="flex h-16 items-center gap-2.5 border-b border-gray-100 px-5">
+      <div className="flex h-16 items-center gap-2.5 border-b border-gray-100 dark:border-gray-800 px-5">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600">
           <svg className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
         </div>
-        <span className="text-base font-semibold text-gray-900">Quick Invoice</span>
+        <span className="text-base font-semibold text-gray-900 dark:text-white">Quick Invoice</span>
       </div>
 
       {/* Navigation */}
@@ -87,8 +88,8 @@ export function Sidebar({ onClose }: SidebarProps): React.ReactElement {
                   className={cn(
                     "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                     isActive
-                      ? "bg-indigo-50 text-indigo-700"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                      ? "bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300"
+                      : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
                   )}
                 >
                   {item.icon}
@@ -100,15 +101,21 @@ export function Sidebar({ onClose }: SidebarProps): React.ReactElement {
         </ul>
       </nav>
 
+      {/* Theme toggle */}
+      <div className="flex items-center border-t border-gray-100 dark:border-gray-800 px-4 py-2">
+        <span className="flex-1 text-xs text-gray-500 dark:text-gray-400">Theme</span>
+        <ThemeToggle />
+      </div>
+
       {/* Footer — upgrade prompt for free plan */}
-      <div className="border-t border-gray-100 p-4">
-        <div className="rounded-lg bg-indigo-50 px-4 py-3">
-          <p className="text-xs font-medium text-indigo-800">Free plan</p>
-          <p className="mt-0.5 text-xs text-indigo-600">3 invoices remaining</p>
+      <div className="border-t border-gray-100 dark:border-gray-800 p-4">
+        <div className="rounded-lg bg-indigo-50 dark:bg-indigo-950 px-4 py-3">
+          <p className="text-xs font-medium text-indigo-800 dark:text-indigo-200">Free plan</p>
+          <p className="mt-0.5 text-xs text-indigo-600 dark:text-indigo-400">3 invoices remaining</p>
           <Link
             href="/settings?tab=billing"
             onClick={onClose}
-            className="mt-2 block text-xs font-semibold text-indigo-700 hover:text-indigo-900"
+            className="mt-2 block text-xs font-semibold text-indigo-700 dark:text-indigo-300 hover:text-indigo-900 dark:hover:text-indigo-100"
           >
             Upgrade to Pro →
           </Link>

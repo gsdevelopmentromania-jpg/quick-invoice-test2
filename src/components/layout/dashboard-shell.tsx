@@ -22,7 +22,7 @@ export function DashboardShell({ children }: DashboardShellProps): React.ReactEl
   const closeSidebar = useCallback(() => setSidebarOpen(false), []);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">
       {/* Desktop sidebar — always visible on lg+ */}
       <div className="hidden lg:flex lg:flex-shrink-0">
         <Sidebar />
