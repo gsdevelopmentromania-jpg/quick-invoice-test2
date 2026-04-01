@@ -5,7 +5,12 @@ import type { NextRequestWithAuth } from "next-auth/middleware";
 export default withAuth(
   function middleware(req: NextRequestWithAuth) {
     const { pathname } = req.nextUrl;
-    const isAuthPage = pathname === "/login" || pathname === "/register";
+    const isAuthPage =
+      pathname === "/login" ||
+      pathname === "/register" ||
+      pathname === "/forgot-password" ||
+      pathname.startsWith("/reset-password") ||
+      pathname.startsWith("/verify-email");
     const token = req.nextauth.token;
 
     // Redirect logged-in users away from auth pages
@@ -19,7 +24,12 @@ export default withAuth(
     callbacks: {
       authorized({ token, req }) {
         const { pathname } = req.nextUrl;
-        const isAuthPage = pathname === "/login" || pathname === "/register";
+        const isAuthPage =
+          pathname === "/login" ||
+          pathname === "/register" ||
+          pathname === "/forgot-password" ||
+          pathname.startsWith("/reset-password") ||
+          pathname.startsWith("/verify-email");
         // Auth pages are always accessible (redirect handled in middleware fn)
         if (isAuthPage) return true;
         return !!token;
@@ -32,6 +42,11 @@ export const config = {
   matcher: [
     "/login",
     "/register",
+    "/forgot-password",
+    "/reset-password",
+    "/reset-password/:path*",
+    "/verify-email",
+    "/verify-email/:path*",
     "/dashboard/:path*",
     "/invoices/:path*",
     "/clients/:path*",
