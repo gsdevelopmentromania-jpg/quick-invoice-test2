@@ -1,113 +1,140 @@
-# UI Shell & Layout — Implementation Report
-
-**Project:** Quick Invoice Test 2
-**Phase:** Core MVP Build · Step 2 — App Shell & Layout
-**Author:** Lux (Frontend Engineer)
-**Date:** 2026-04-01
-**Branch:** `playbook/saas-mvp-from-scratch-cfaa4039`
+# UI Shell Implementation Log
+**Task:** App Shell & Layout  
+**Phase:** Core MVP Build — Step 2  
+**Author:** Lux (Frontend Engineer)  
+**Date:** 2026-04-01  
+**Status:** Complete
 
 ---
 
 ## Summary
 
-Built the complete app shell for Quick Invoice — the structural foundation all feature pages will live inside. Zero feature logic was introduced; all feature panels are skeleton/stub placeholders.
+Built the full app shell structural foundation for Quick Invoice Test 2. All layout components, routing structure, design tokens, skeleton loaders, error boundaries, and mobile responsiveness are in place. Feature-page content is left as stubs for the next task.
 
 ---
 
-## 1. Design System Foundation
+## What Was Already Built (Other Agents)
 
-### Tailwind Configuration (`tailwind.config.ts`)
-- Custom `brand` color scale aliasing indigo (50–950)
-- Extended spacing: `sidebar: 240px`, `header: 64px`
-- `--font-inter` CSS variable → `fontFamily.sans`
-- Shimmer keyframe animation for skeleton loaders
+The Data Model & API agent had already scaffolded significant shell infrastructure:
 
-### CSS Design Tokens (`src/app/globals.css`)
-
-| Token group | Variables |
-|---|---|
-| Brand palette | `--color-brand-{50–700}` |
-| Surfaces | `--color-bg`, `--color-surface`, `--color-border` |
-| Typography | `--color-text-{primary,secondary,muted,disabled}` |
-| Status | `--color-{success,warning,danger,info}` |
-| Layout dims | `--sidebar-width: 240px`, `--header-height: 64px` |
-
-### Config Files Added
-- `tailwind.config.ts`
-- `postcss.config.js` — tailwind + autoprefixer
-- `package.json` — added `tailwindcss ^3.4.17`, `postcss ^8.4.47`, `autoprefixer ^10.4.20`
-
----
-
-## 2. App Layout
-
-### Sidebar (`src/components/layout/sidebar.tsx`)
-- Fixed 240px width, full-height, `border-r`
-- Nav: Dashboard · Invoices · Clients · Settings
-- Active state: `bg-indigo-50 text-indigo-700` + `aria-current="page"`
-- Footer: Free plan upgrade prompt
-- `onClose` prop for mobile drawer
-
-### Mobile Header (`src/components/layout/header.tsx`)
-- Visible `< lg` only
-- Hamburger → opens sidebar drawer
-- Computed page title from pathname
-- Quick-action `+` button → `/invoices/new`
-
-### Dashboard Shell (`src/components/layout/dashboard-shell.tsx`)
-- Client component with `sidebarOpen` state
-- Desktop: sidebar always visible (`hidden lg:flex`)
-- Mobile: backdrop overlay + slide-in drawer
-- Sidebar auto-closes on route change
+| File | Status |
+|------|--------|
+| `src/app/layout.tsx` | ✅ Root layout with Inter font + Providers |
+| `src/app/globals.css` | ✅ Design tokens, typography scale, shimmer animation |
+| `src/app/page.tsx` | ✅ Public landing/home page |
+| `src/app/error.tsx` | ✅ Next.js error boundary page |
+| `src/app/global-error.tsx` | ✅ Top-level global error fallback |
+| `src/app/not-found.tsx` | ✅ 404 page |
+| `src/components/layout/dashboard-shell.tsx` | ✅ Responsive shell with mobile drawer |
+| `src/components/layout/sidebar.tsx` | ✅ Desktop/mobile sidebar with nav |
+| `src/components/layout/header.tsx` | ✅ Mobile-only header with hamburger |
+| `src/components/providers.tsx` | ✅ SessionProvider wrapper |
+| `src/components/error-boundary.tsx` | ✅ Class-based ErrorBoundary component |
+| `src/components/ui/skeleton.tsx` | ✅ Full skeleton library (text, card, table, dashboard) |
+| `src/components/ui/empty-state.tsx` | ✅ Reusable empty state component |
+| `src/components/ui/button.tsx` | ✅ Button with variants + loading state |
+| `src/components/ui/badge.tsx` | ✅ Badge with status variants |
+| `src/components/ui/card.tsx` | ✅ Card, CardHeader, CardBody, CardFooter |
+| `src/middleware.ts` | ✅ Auth guards with NextAuth middleware |
+| `tailwind.config.ts` | ✅ Brand colors, font, spacing, animation tokens |
 
 ---
 
-## 3. Route Structure
+## Files Created This Task
 
-| Group | Layout | Routes |
-|---|---|---|
-| `(auth)` | Centered card | `/login`, `/register` |
-| `(dashboard)` | Sidebar shell | `/dashboard`, `/invoices/*`, `/clients/*`, `/settings` |
+### Route Groups & Pages
 
-Auth guards updated: authenticated users visiting `/login`/`/register` redirect to `/dashboard`.
-
----
-
-## 4. Skeleton Loaders (`src/components/ui/skeleton.tsx`)
-
-`Skeleton`, `SkeletonText`, `SkeletonTableRow`, `SkeletonCard`, `SkeletonStatCard`, `SkeletonDashboard`
-
----
-
-## 5. Error Boundaries
-
-| File | Scope |
-|---|---|
-| `src/app/global-error.tsx` | Root crash |
-| `src/app/error.tsx` | Root segment |
-| `src/app/(dashboard)/error.tsx` | Dashboard section |
-| `src/components/error-boundary.tsx` | React class component |
+| File | Purpose |
+|------|---------|
+| `src/app/(dashboard)/layout.tsx` | Wraps all dashboard routes with `DashboardShell` |
+| `src/app/(dashboard)/dashboard/page.tsx` | Dashboard stub page |
+| `src/app/(dashboard)/invoices/page.tsx` | Invoices list stub |
+| `src/app/(dashboard)/invoices/new/page.tsx` | New invoice form stub |
+| `src/app/(dashboard)/clients/page.tsx` | Clients list stub |
+| `src/app/(dashboard)/clients/new/page.tsx` | New client form stub |
+| `src/app/(dashboard)/settings/page.tsx` | Settings page stub with tab nav |
+| `src/app/(auth)/login/page.tsx` | Login page with credential sign-in |
+| `src/app/(auth)/register/page.tsx` | Register page with POST to `/api/auth/register` |
 
 ---
 
-## 6. UI Components
+## Architecture Decisions
 
-`Button` (5 variants, 3 sizes, loading) · `Badge` (7 variants + status helper) · `Card/CardHeader/CardBody/CardFooter` · `EmptyState`
+### Route Groups
+Used Next.js App Router route groups to separate concerns:
+- `(auth)` — public auth pages, no shell wrapper
+- `(dashboard)` — protected pages, all wrapped in `DashboardShell`
+
+This keeps auth pages completely clean (no sidebar/header) while dashboard pages automatically inherit the shell via the group layout.
+
+### Auth Guard
+`src/middleware.ts` (pre-existing) uses `next-auth/middleware` to:
+- Redirect unauthenticated users to `/login` for protected routes
+- Redirect authenticated users away from `/login` and `/register` to `/dashboard`
+
+### Mobile Responsiveness
+- Sidebar is hidden on mobile (`hidden lg:flex`)
+- Mobile header (`lg:hidden`) with hamburger opens a drawer overlay
+- All page layouts use responsive padding and max-width containers
+- Auth forms are single-column, centered, full-width on small screens
+
+### Design System Tokens
+CSS custom properties in `globals.css`:
+- Brand palette: `--color-brand-*` (indigo-based)
+- Surface tokens: `--color-bg`, `--color-surface`, `--color-border`
+- Typography: `--color-text-primary/secondary/muted`
+- Status colors: `--color-success/warning/danger/info`
+- Layout dimensions: `--sidebar-width: 240px`, `--header-height: 64px`
+
+Tailwind extended with `brand.*` color scale and `font-sans` mapping to Inter.
+
+### Skeleton Loaders
+Pre-built skeleton components available:
+- `<Skeleton>` — base shimmer block
+- `<SkeletonText>` — single line
+- `<SkeletonCard>` — invoice/client card
+- `<SkeletonStatCard>` — dashboard stat
+- `<SkeletonTableRow cols={n}>` — table row
+- `<SkeletonDashboard>` — full dashboard layout skeleton
+
+### Error Boundaries
+Three layers of error handling:
+1. `global-error.tsx` — catastrophic failures (replaces entire document)
+2. `error.tsx` — per-route segment errors with retry
+3. `<ErrorBoundary>` component — per-section client-side errors with custom fallback
 
 ---
 
-## 7. Files Created / Updated
+## Routing Map
 
-**Created (31):** tailwind.config.ts, postcss.config.js, src/lib/utils.ts, src/components/providers.tsx, src/components/error-boundary.tsx, src/components/ui/{skeleton,button,badge,card,empty-state}.tsx, src/components/layout/{sidebar,header,dashboard-shell}.tsx, src/app/(auth)/{layout,login/page,register/page}.tsx, src/app/(dashboard)/{layout,error,loading,dashboard/page,invoices/page,invoices/new/page,invoices/[id]/page,clients/page,clients/new/page,clients/[id]/page,settings/page}.tsx, src/app/{error,global-error,not-found,loading}.tsx
-
-**Updated (4):** src/app/globals.css, src/app/layout.tsx, src/middleware.ts, package.json
+```
+/                         → Public landing page
+/login                    → (auth) Login form
+/register                 → (auth) Register form
+/dashboard                → (dashboard) Dashboard stub
+/invoices                 → (dashboard) Invoices list stub
+/invoices/new             → (dashboard) New invoice stub
+/clients                  → (dashboard) Clients list stub
+/clients/new              → (dashboard) New client stub
+/settings                 → (dashboard) Settings stub
+/api/...                  → Server-side API routes (not UI)
+```
 
 ---
 
-## Next Step
+## TypeScript Compliance
 
-**[playbook] Feature Pages** — replace stubs with real invoice list/form, client management, settings, and dashboard stats using the component library and existing API routes.
+- Target: ES2017 — no `Object.fromEntries`, `Array.flat`, or regex `/s` flag used
+- All components typed with explicit return types (`React.ReactElement`)
+- No implicit `any` — strict mode satisfied
+- All imports verified against existing exported names
 
 ---
 
-*Report generated by Lux (Frontend Engineer) · 2026-04-01*
+## Next Steps (Feature Task)
+
+The stub pages are ready to be filled in with:
+- Dashboard: stats cards, recent invoices table, quick actions
+- Invoices: filterable table, status badges, bulk actions
+- Clients: client list with search
+- Settings: profile form, billing management, notification preferences
