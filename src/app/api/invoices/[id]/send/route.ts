@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import stripe from "@/lib/stripe";
+import { sendInvoiceEmail } from "@/lib/email";
 import type { ApiResponse, InvoiceWithClient } from "@/types";
 
 /**
@@ -90,7 +91,20 @@ export async function POST(
     return inv;
   });
 
-  // TODO: Send email via Resend (src/lib/email.ts)
+  // Send invoice email — failure is non-fatal; log and continue
+  try {
+    const senderName = session.user.name ?? session.user.email ?? "Quick Invoice";
+    const senderEmail = session.user.email ?? "noreply@quickinvoice.app";
+
+    await sendInvoiceEmail({
+      invoice: updated as InvoiceWithClient,
+      paymentUrl: stripePaymentLinkUrl,
+      senderName,
+      senderEmail,
+    });
+  } catch (emailErr) {
+    console.error("[send invoice] Failed to send invoice email:", emailErr);
+  }
 
   return NextResponse.json({
     data: { ...(updated as InvoiceWithClient), paymentUrl: stripePaymentLinkUrl },

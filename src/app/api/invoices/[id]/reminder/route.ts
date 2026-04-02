@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { sendReminderEmail } from "@/lib/email";
 import type { ApiResponse } from "@/types";
 
 /**
@@ -40,9 +41,6 @@ export async function POST(
     );
   }
 
-  // TODO: Send reminder email via Resend (src/lib/email.ts)
-  // await sendReminderEmail({ invoice, client: invoice.client });
-
   await prisma.invoiceActivity.create({
     data: {
       invoiceId: invoice.id,
@@ -50,6 +48,20 @@ export async function POST(
       metadata: { sentTo: invoice.client.email },
     },
   });
+
+  // Send reminder email — failure is non-fatal; log and continue
+  try {
+    const senderName = session.user.name ?? session.user.email ?? "Quick Invoice";
+    const senderEmail = session.user.email ?? "noreply@quickinvoice.app";
+
+    await sendReminderEmail({
+      invoice,
+      senderName,
+      senderEmail,
+    });
+  } catch (emailErr) {
+    console.error("[reminder] Failed to send reminder email:", emailErr);
+  }
 
   return NextResponse.json({ data: { success: true } });
 }

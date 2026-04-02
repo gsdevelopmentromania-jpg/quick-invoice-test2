@@ -3,6 +3,7 @@ import Stripe from "stripe";
 import stripe from "@/lib/stripe";
 import prisma from "@/lib/prisma";
 import { planFromPriceId } from "@/lib/billing";
+import { sendTrialEndingEmail } from "@/lib/email";
 import type { SubscriptionStatus, Plan } from "@prisma/client";
 
 /**
@@ -194,10 +195,29 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       case "customer.subscription.trial_will_end": {
         const sub = event.data.object as Stripe.Subscription;
         const trialEnd = sub.trial_end ? new Date(sub.trial_end * 1000) : null;
+        const customerId = typeof sub.customer === "string" ? sub.customer : null;
+
         console.info(
           `[webhook] Trial ending soon for subscription ${sub.id} at ${trialEnd?.toISOString() ?? "unknown"}`
         );
-        // TODO: send trial-ending email via @/lib/email
+
+        if (customerId && trialEnd) {
+          try {
+            const user = await prisma.user.findFirst({
+              where: { stripeCustomerId: customerId },
+            });
+
+            if (user) {
+              await sendTrialEndingEmail({
+                to: user.email,
+                name: user.fullName,
+                trialEndDate: trialEnd,
+              });
+            }
+          } catch (emailErr) {
+            console.error("[webhook] Failed to send trial ending email:", emailErr);
+          }
+        }
         break;
       }
 
