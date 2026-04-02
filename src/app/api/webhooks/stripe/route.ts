@@ -201,23 +201,21 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           `[webhook] Trial ending soon for subscription ${sub.id} at ${trialEnd?.toISOString() ?? "unknown"}`
         );
 
-        if (trialEnd && customerId) {
+        if (customerId && trialEnd) {
           try {
             const user = await prisma.user.findFirst({
               where: { stripeCustomerId: customerId },
-              select: { email: true, fullName: true },
             });
 
-            if (user?.email) {
+            if (user) {
               await sendTrialEndingEmail({
                 to: user.email,
-                name: user.fullName ?? undefined,
+                name: user.fullName,
                 trialEndDate: trialEnd,
-                upgradeUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/pricing`,
               });
             }
           } catch (emailErr) {
-            console.error("[webhook] Failed to send trial-ending email:", emailErr);
+            console.error("[webhook] Failed to send trial ending email:", emailErr);
           }
         }
         break;
