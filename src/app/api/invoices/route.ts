@@ -16,7 +16,7 @@ const lineItemSchema = z.object({
 
 const createInvoiceSchema = z.object({
   clientId: z.string().cuid("Invalid client ID"),
-  dueDate: z.string().datetime("Invalid due date"),
+  dueDate: z.string().min(1, "Due date is required"),
   currency: z.string().length(3).default("USD"),
   taxRate: z.number().min(0).max(100).default(0),
   discountAmount: z.number().nonnegative().default(0),

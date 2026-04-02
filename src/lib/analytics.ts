@@ -33,9 +33,11 @@ export type AnalyticsEvent =
 function serializeProperties(
   props: Record<string, unknown>
 ): Record<string, string | boolean | number> {
-  return Object.fromEntries(
-    Object.entries(props).map(([k, v]) => [k, String(v)])
-  );
+  const result: Record<string, string> = {};
+  for (const key of Object.keys(props)) {
+    result[key] = String(props[key]);
+  }
+  return result;
 }
 
 export function trackEvent(event: AnalyticsEvent): void {
