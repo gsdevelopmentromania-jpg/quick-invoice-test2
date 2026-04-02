@@ -205,13 +205,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
           try {
             const user = await prisma.user.findFirst({
               where: { stripeCustomerId: customerId },
-              select: { email: true, name: true },
+              select: { email: true, fullName: true },
             });
 
             if (user?.email) {
               await sendTrialEndingEmail({
                 to: user.email,
-                name: user.name ?? undefined,
+                name: user.fullName ?? undefined,
                 trialEndDate: trialEnd,
                 upgradeUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/pricing`,
               });
