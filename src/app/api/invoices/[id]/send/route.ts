@@ -91,20 +91,19 @@ export async function POST(
     return inv;
   });
 
-  // Send invoice email — failure must not block the response
+  // Send invoice email — failure is non-fatal; log and continue
   try {
-    const paymentUrl =
-      stripePaymentLinkUrl ??
-      `${process.env.NEXT_PUBLIC_APP_URL}/invoice/${invoice.id}`;
+    const senderName = session.user.name ?? session.user.email ?? "Quick Invoice";
+    const senderEmail = session.user.email ?? "noreply@quickinvoice.app";
 
     await sendInvoiceEmail({
       invoice: updated as InvoiceWithClient,
-      paymentUrl,
-      senderName: session.user.name ?? "Quick Invoice",
-      senderEmail: session.user.email ?? "noreply@quickinvoice.app",
+      paymentUrl: stripePaymentLinkUrl,
+      senderName,
+      senderEmail,
     });
   } catch (emailErr) {
-    console.error("[send] Failed to send invoice email:", emailErr);
+    console.error("[send invoice] Failed to send invoice email:", emailErr);
   }
 
   return NextResponse.json({
