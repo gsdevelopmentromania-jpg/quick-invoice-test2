@@ -34,3 +34,58 @@ We collect the following categories of personal data:
 - Billing and subscription management
 - Customer support and service improvement
 - Security monitoring and fraud prevention
+
+## 4. Data Retention
+We retain personal data for no longer than necessary to fulfill the purposes outlined in this policy, plus any applicable legal retention periods. Specifically:
+- **Account Data**: Retained for the duration of your account activity + 6 years for tax compliance
+- **Invoice Data**: Retained indefinitely for ongoing service provision unless deleted by user
+- **Payment Information**: Processed transactionally through third parties, not stored on our systems
+- **Technical Data**: Retained for 12 months
+
+## 5. Third-Party Data Sharing
+Your data may be shared with the following categories of third parties:
+
+### 5.1 Processors
+- **Payment Gateways**: Stripe, PayPal (subject to their DPAs)
+- **Hosting Providers**: AWS, Google Cloud (certified under EU-US Data Privacy Framework)
+- **Analytics**: Google Analytics (data anonymization enabled)
+
+### 5.2 Controllers
+In cases of merger/acquisition, data may be transferred to new corporate entity
+
+## 6. User Rights
+
+### 6.1 GDPR Rights
+You have the right to:
+1. Access your data (Article 15)
+2. Rectify inaccuracies (Article 16)
+3. Erasure (Article 17)
+4. Restrict processing (Article 18)
+5. Data portability (Article 20)
+6. Object to processing (Article 21)
+
+### 6.2 CCPA Rights
+You have the right to:
+1. Know what personal data we collect
+2. Delete personal data
+3. Opt-out of sale of personal information
+
+### 6.3 How to Exercise Rights
+Submit requests via email to privacy@quickinvoice.com or through your account settings. We will respond within 30 days.
+
+## 7. Security Measures
+We implement appropriate technical and organizational measures including:
+- Encryption in transit (TLS 1.3)
+- Role-based access controls
+- Regular security audits (ISO 27001 compliant)
+- Data loss prevention monitoring
+
+## 8. Contact Information
+For questions about this policy, contact:
+Quick Invoice SaaS
+Data Protection Officer
+privacy@quickinvoice.com
+123 Business Street, Bucharest, Romania
+
+## 9. Policy Updates
+This policy was last updated on 2026-04-02. We may update it periodically and will notify users of material changes through email or in-app notifications.
