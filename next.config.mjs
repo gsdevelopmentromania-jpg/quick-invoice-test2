@@ -3,6 +3,8 @@ import { withSentryConfig } from "@sentry/nextjs";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Required for the Dockerfile standalone runner stage
+  output: "standalone",
   pageExtensions: ["js", "jsx", "mdx", "ts", "tsx"],
   images: {
     remotePatterns: [
