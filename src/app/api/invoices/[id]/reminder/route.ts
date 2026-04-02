@@ -41,22 +41,6 @@ export async function POST(
     );
   }
 
-  // Send reminder email — failure must not block the response
-  try {
-    const paymentUrl = invoice.stripePaymentLinkId
-      ? `${process.env.NEXT_PUBLIC_APP_URL}/invoice/${invoice.id}`
-      : undefined;
-
-    await sendReminderEmail({
-      invoice,
-      paymentUrl,
-      senderName: session.user.name ?? "Quick Invoice",
-      senderEmail: session.user.email ?? "noreply@quickinvoice.app",
-    });
-  } catch (emailErr) {
-    console.error("[reminder] Failed to send reminder email:", emailErr);
-  }
-
   await prisma.invoiceActivity.create({
     data: {
       invoiceId: invoice.id,
@@ -64,6 +48,20 @@ export async function POST(
       metadata: { sentTo: invoice.client.email },
     },
   });
+
+  // Send reminder email — failure is non-fatal; log and continue
+  try {
+    const senderName = session.user.name ?? session.user.email ?? "Quick Invoice";
+    const senderEmail = session.user.email ?? "noreply@quickinvoice.app";
+
+    await sendReminderEmail({
+      invoice,
+      senderName,
+      senderEmail,
+    });
+  } catch (emailErr) {
+    console.error("[reminder] Failed to send reminder email:", emailErr);
+  }
 
   return NextResponse.json({ data: { success: true } });
 }
