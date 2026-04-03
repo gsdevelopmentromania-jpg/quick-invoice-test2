@@ -1,3 +1,3 @@
-# Progenix Summary
+# Progenix
 
-Progenix is an AI-powered development platform that orchestrates a team of specialized AI agents — including Software Engineers, QA Managers, Tech Leads, and Infrastructure Engineers — to plan, build, test, and deploy software projects autonomously. It manages the entire software development lifecycle by breaking work into phased tasks, assigning them to the right agents, and coordinating execution through GitHub-integrated workflows. With capabilities spanning project management, code generation, automated testing, CI/CD, and deployment, Progenix acts as a virtual Chief of Staff that turns high-level requests into shipped software.
+Progenix is a SaaS platform designed for freelancers to effortlessly create, send, and track invoices in one place. It features built-in authentication, Stripe-powered billing, and PDF export to streamline the entire invoicing workflow. Built with a modern tech stack including Next.js, React, Tailwind CSS, and Prisma, Progenix delivers a fast, polished experience for independent professionals.
